@@ -1921,7 +1921,6 @@ function salvarNovoAndamento(event) {
   
   const dados = {
     idAssessorado: idAssessorado,
-    nomeAssessorado: assessorado ? assessorado.nome : '',
     marca: formData.get('marca'),
     objetoCampanha: formData.get('objetoCampanha'),
     fase: formData.get('fase'),
@@ -4255,11 +4254,11 @@ function carregarEstatisticas() {
         document.getElementById('stats-container').innerHTML = `
           <div class="flex justify-between">
             <span class="text-gray-600">Total Assessorados:</span>
-            <span class="font-bold text-litte-dark">${result.dashboard.totalAssessorados}</span>
+            <span class="font-bold text-litte-dark">${result.totalAssessorados}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">Campanhas Ativas:</span>
-            <span class="font-bold text-litte-dark">${result.dashboard.campanhasAtivas}</span>
+            <span class="font-bold text-litte-dark">${result.campanhasAtivas}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">Prospecções:</span>
@@ -4267,7 +4266,7 @@ function carregarEstatisticas() {
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">Taxa Conversão:</span>
-            <span class="font-bold text-litte-green">${result.dashboard.taxaConversao}%</span>
+            <span class="font-bold text-litte-green">${result.taxaConversao}%</span>
           </div>
         `;
       }
@@ -4277,7 +4276,7 @@ function carregarEstatisticas() {
         <p class="text-center text-red-500">Erro ao carregar estatísticas</p>
       `;
     })
-    .testarIntegracoes();
+    .getDashboardData();
 }
 
 function sincronizarTudo() {

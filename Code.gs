@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 function doGet(e) {
-  return HtmlService.createHtmlOutputFromFile('Index')
+  return HtmlService.createHtmlOutputFromFile('Html')
     .setTitle('Sistema Littê v3.5')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -379,44 +379,6 @@ function setupCampanhasAtivasSheet() {
   }
   
   sheet.setFrozenRows(1);
-  return sheet;
-}
-
-
-function setupChecklistSheetComplete() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName('Checklist_Complete');
-  
-  if (!sheet) {
-    sheet = ss.insertSheet('Checklist_Complete');
-  }
-  
-  const headers = [
-    'ID Campanha', 'ID Assessorado', 'Nome Assessorado', 'Marca',
-    'Precisa Contrato', 'Status Contrato', 'Data Prev Assinatura', 'Data Real Assinatura', 'Link Contrato', 'Obs Contrato',
-    'Precisa Produto', 'Nome Produto', 'Quantidade', 'Valor Produto', 'Endereço Envio', 'Status Produto', 'Data Envio', 'Código Rastreio', 'Link Rastreamento',
-    'Precisa Roteiro', 'Tipo Roteiro', 'Num Versões', 'Status Roteiro', 'Data Prev Roteiro', 'Data Real Roteiro', 'Data Aprov Roteiro', 'Link Pasta Roteiro', 'Feedback Cliente', 'Data Última Versão',
-    'Status Conteúdo', 'Tipo Conteúdo', 'Formato', 'Duração Vídeo', 'Data Prev Conteúdo', 'Data Real Conteúdo', 'Data Aprov Conteúdo', 'Link Pasta Aprovação', 'Num Ajustes', 'Aprovador',
-    'Status Postagem', 'Rede Social', 'Tipo Post', 'Data Prev Postagem', 'Horário Postagem', 'Data Real Postagem', 'Link Postagem', 'Alcance Esperado', 'Alcance Real', 'Engajamento', 'Métricas Detalhadas',
-    'Data Prev Coleta Métricas', 'Status Métricas', 'Link Métricas',
-    'Valor Total Pagamento', 'Data Prev Pag Cliente',
-    'Valor Repasse 80%', 'Taxa Littê 20%', 'Status Repasse', 'Data Repasse', 'Comprovante Repasse',
-    'Data Criação', 'Última Atualização'
-  ];
-  
-  const primeiracelula = sheet.getRange(1, 1).getValue();
-  
-  if (primeiracelula !== 'ID Campanha') {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.getRange(1, 1, 1, headers.length)
-      .setFontWeight('bold')
-      .setBackground('#667eea')
-      .setFontColor('#ffffff');
-    
-    sheet.setFrozenRows(1);
-    SpreadsheetApp.flush();
-  }
-  
   return sheet;
 }
 
@@ -3155,80 +3117,6 @@ function getProximosPrazosDoCompleto(limite) {
  * Busca link da pasta Drive da campanha
  * CORREÇÃO: Verificação robusta e tratamento de erros
  */
-function buscarLinkPastaDriveCampanha(idCampanha) {
-  try {
-    Logger.log('🔍 Buscando pasta Drive para: ' + idCampanha);
-    
-    // CORREÇÃO 1: Verificar se SHEETS está definido
-    if (typeof SHEETS === 'undefined' || !SHEETS) {
-      Logger.log('❌ ERRO: SHEETS não está definido');
-      return {
-        success: false,
-        message: 'Erro de configuração: SHEETS não definido'
-      };
-    }
-    
-    // CORREÇÃO 2: Buscar na aba Andamentos
-    const andamentosSheet = SHEETS.andamentos;
-    
-    if (!andamentosSheet) {
-      return {
-        success: false,
-        message: 'Aba Andamentos não encontrada'
-      };
-    }
-    
-    const data = andamentosSheet.getDataRange().getValues();
-    const headers = data[0];
-    const idCampanhaCol = headers.indexOf('idCampanha');
-    const linkPastaCol = headers.indexOf('linkPastaCampanha');
-    
-    if (idCampanhaCol === -1 || linkPastaCol === -1) {
-      return {
-        success: false,
-        message: 'Colunas não encontradas na planilha'
-      };
-    }
-    
-    // CORREÇÃO 3: Buscar linha da campanha
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][idCampanhaCol] === idCampanha) {
-        const linkPasta = data[i][linkPastaCol];
-        
-        if (linkPasta && linkPasta.toString().trim() !== '') {
-          Logger.log('✅ Pasta encontrada: ' + linkPasta);
-          
-          return {
-            success: true,
-            linkPasta: linkPasta
-          };
-        } else {
-          Logger.log('⚠️ Pasta ainda não criada para esta campanha');
-          
-          return {
-            success: false,
-            message: 'Pasta ainda não foi criada. Mude o status para "Fechado" primeiro.'
-          };
-        }
-      }
-    }
-    
-    return {
-      success: false,
-      message: 'Campanha não encontrada'
-    };
-    
-  } catch (error) {
-    Logger.log('❌ Erro ao buscar pasta: ' + error.toString());
-    Logger.log('Stack: ' + error.stack);
-    
-    return {
-      success: false,
-      message: 'Erro ao buscar pasta: ' + error.toString()
-    };
-  }
-}
-
 /**
  * Busca prazos do Checklist_Execução (se existir)
  * @param {number} limite - Número máximo
@@ -3932,39 +3820,6 @@ function removerConteudoChecklist(idCampanha, idConteudo) {
  * @param {string} nomeSubpasta - Nome da subpasta (ex: '03_CONTEUDO_APROVACAO')
  * @returns {string} URL da pasta ou vazio
  */
-function buscarLinkPastaDriveCampanha(idCampanha, nomeSubpasta) {
-  try {
-    // Buscar andamento para pegar link da pasta mãe
-    const andamento = getAndamento(idCampanha);
-    if (!andamento || !andamento.linkPastaCampanha) {
-      return '';
-    }
-    
-    // Extrair ID da pasta mãe da URL
-    const urlPastaMae = andamento.linkPastaCampanha;
-    const match = urlPastaMae.match(/folders\/([a-zA-Z0-9-_]+)/);
-    
-    if (!match) return '';
-    
-    const idPastaMae = match[1];
-    
-    // Buscar subpasta
-    const pastaMae = DriveApp.getFolderById(idPastaMae);
-    const subpastas = pastaMae.getFoldersByName(nomeSubpasta);
-    
-    if (subpastas.hasNext()) {
-      return subpastas.next().getUrl();
-    }
-    
-    return '';
-    
-  } catch (e) {
-    Logger.log('⚠️ buscarLinkPastaDriveCampanha: ' + e);
-    return '';
-  }
-}
-
-
 // ═══════════════════════════════════════════════════════════════════════
 //                      RECALCULAR VALORES DE REPASSE
 // ═══════════════════════════════════════════════════════════════════════
@@ -3976,46 +3831,6 @@ function buscarLinkPastaDriveCampanha(idCampanha, nomeSubpasta) {
  * @param {string} idCampanha - ID da campanha
  * @returns {Object} {success, message}
  */
-function recalcularValoresRepasse(idCampanha) {
-  try {
-    const andamento = getAndamento(idCampanha);
-    if (!andamento) {
-      return { success: false, message: 'Campanha não encontrada' };
-    }
-    
-    const valorTotal = andamento.valorFechado || 0;
-    const repasse80 = valorTotal * 0.80;
-    const taxa20 = valorTotal * 0.20;
-    
-    const sheet = setupChecklistSheetComplete();
-    const rowNum = findRowById(sheet, idCampanha);
-    
-    if (!rowNum) {
-      return { success: false, message: 'Checklist não encontrado' };
-    }
-    
-    // Atualizar valores
-    sheet.getRange(rowNum, 49).setValue(valorTotal);
-    sheet.getRange(rowNum, 50).setValue(repasse80);
-    sheet.getRange(rowNum, 51).setValue(taxa20);
-    sheet.getRange(rowNum, 57).setValue(new Date());
-    
-    SpreadsheetApp.flush();
-    
-    Logger.log('✅ Valores recalculados:');
-    Logger.log('   Total: R$ ' + valorTotal.toFixed(2));
-    Logger.log('   Repasse: R$ ' + repasse80.toFixed(2));
-    Logger.log('   Taxa: R$ ' + taxa20.toFixed(2));
-    
-    return { success: true, message: 'Valores recalculados' };
-    
-  } catch (e) {
-    Logger.log('❌ recalcularValoresRepasse: ' + e);
-    return { success: false, message: e.toString() };
-  }
-}
-
-
 // ═══════════════════════════════════════════════════════════════════════
 //                      MIGRAÇÃO: CRIAR CHECKLISTS FALTANTES
 // ═══════════════════════════════════════════════════════════════════════
@@ -5592,117 +5407,6 @@ function diagnosticarProblemaData() {
 // ═══════════════════════════════════════════════════════════════════════
 //    FUNÇÃO AUXILIAR - Configurar Calendar ID (EXECUTE UMA VEZ)
 // ═══════════════════════════════════════════════════════════════════════
-
-function configurarCalendarId() {
-  const props = PropertiesService.getScriptProperties();
-  
-  const calendarId = 'c_b4a0a6992212fdef828fdec073ce8e99bf19095ffcb67f3699ffdf39b0922414@group.calendar.google.com';
-  
-  props.setProperty('CALENDAR_ID', calendarId);
-  
-  Logger.log('✅ CALENDAR_ID configurado!');
-  Logger.log('ID: ' + calendarId);
-  
-  // Testar acesso
-  try {
-    const calendar = CalendarApp.getCalendarById(calendarId);
-    Logger.log('✅ Calendar acessível: ' + calendar.getName());
-    return { success: true, calendarName: calendar.getName() };
-  } catch (e) {
-    Logger.log('❌ Erro ao acessar calendar: ' + e);
-    return { success: false, message: e.toString() };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-//    FUNÇÃO DE TESTE - Testar criação de evento
-// ═══════════════════════════════════════════════════════════════════════
-
-function testarCriarEventoEtapa() {
-  Logger.clear();
-  
-  Logger.log('🧪 TESTE - criarEventoChecklistEtapa');
-  Logger.log('');
-  
-  // Criar evento para amanhã
-  const amanha = new Date();
-  amanha.setDate(amanha.getDate() + 1);
-  
-  const resultado = criarEventoChecklistEtapa(
-    'C001',                    // idCampanha
-    'ROTEIRO',                 // etapa
-    amanha,                    // dataPrevista
-    'Maria Silva',             // nomeInfluenciador
-    'Marca Teste'              // marca
-  );
-  
-  Logger.log('');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('RESULTADO FINAL:');
-  Logger.log(JSON.stringify(resultado, null, 2));
-  Logger.log('═══════════════════════════════════════');
-  
-  if (resultado.success) {
-    Logger.log('');
-    Logger.log('✅ TESTE PASSOU!');
-    Logger.log('💡 Verifique o evento no Google Calendar');
-  } else {
-    Logger.log('');
-    Logger.log('❌ TESTE FALHOU!');
-    Logger.log('Erro: ' + resultado.message);
-    
-    if (resultado.message.includes('Calendar ID não configurado')) {
-      Logger.log('');
-      Logger.log('💡 SOLUÇÃO: Execute configurarCalendarId()');
-    }
-  }
-  
-  return resultado;
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-//                      FUNÇÕES DE TESTE
-// ═══════════════════════════════════════════════════════════════════════
-
-function testarIntegracoes() {
-  try {
-    const dashboard = getDashboardData();
-    const prospeccoes = getProspeccoes();
-    const metricas = getMetricasFinanceiras();
-    
-    return {
-      success: true,
-      dashboard: dashboard,
-      prospeccoes: prospeccoes.length,
-      message: 'Todas as integrações OK!'
-    };
-  } catch (e) {
-    Logger.log('❌ testarIntegracoes: ' + e);
-    return { success: false, message: e.toString() };
-  }
-}
-
-function gerarRelatorioMensalAutomatico() {
-  try {
-    Logger.log('📊 Gerando relatório mensal...');
-    sincronizarFinanceiroMaster();
-    return { success: true, message: 'Relatório mensal gerado!' };
-  } catch (e) {
-    Logger.log('❌ gerarRelatorioMensalAutomatico: ' + e);
-    return { success: false, message: e.toString() };
-  }
-}
-
-function verificarPrazosVencidos() {
-  try {
-    Logger.log('⏰ Verificando prazos...');
-    return { success: true, count: 0 };
-  } catch (e) {
-    Logger.log('❌ verificarPrazosVencidos: ' + e);
-    return { success: false, message: e.toString() };
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════════════
 //                      FIM DO CODE.GS
 // ═══════════════════════════════════════════════════════════════════════
@@ -5710,236 +5414,6 @@ function verificarPrazosVencidos() {
 Logger.log('✅ Sistema Littê v3.5 - Code.gs Completo Carregado');
 Logger.log('📊 Total de funções principais: 50+');
 Logger.log('🎯 Pronto para produção!');
-
-
-function configurarCalendarId() {
-  const props = PropertiesService.getScriptProperties();
-  
-  const calendarId = 'c_b4a0a6992212fdef828fdec073ce8e99bf19095ffcb67f3699ffdf39b0922414@group.calendar.google.com';
-  
-  props.setProperty('CALENDAR_ID', calendarId);
-  
-  Logger.log('✅ CALENDAR_ID configurado!');
-  
-  return { success: true };
-}
-
-
-
-function diagnosticarProblemaChecklist() {
-  Logger.clear();
-  
-  Logger.log('🔍 DIAGNÓSTICO - Por que não encontra o checklist?');
-  Logger.log('');
-  
-  // 1. Verificar todos os checklists existentes
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Checklist_Complete');
-  
-  if (!sheet) {
-    Logger.log('❌ Aba Checklist_Complete não existe!');
-    return;
-  }
-  
-  Logger.log('✅ Aba encontrada: ' + sheet.getName());
-  Logger.log('📊 Total de linhas: ' + sheet.getLastRow());
-  Logger.log('');
-  
-  if (sheet.getLastRow() <= 1) {
-    Logger.log('⚠️ Aba só tem header (nenhum checklist criado)');
-    return;
-  }
-  
-  // 2. Listar TODOS os IDs
-  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues();
-  
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('📋 CHECKLISTS EXISTENTES:');
-  Logger.log('═══════════════════════════════════════');
-  
-  data.forEach(function(row, index) {
-    const id = String(row[0] || '');
-    const idAssessorado = String(row[1] || '');
-    const nome = String(row[2] || '');
-    const marca = String(row[3] || '');
-    
-    Logger.log('');
-    Logger.log('[' + (index + 1) + '] ID Campanha: "' + id + '"');
-    Logger.log('    Comprimento: ' + id.length + ' caracteres');
-    Logger.log('    ID Assessorado: "' + idAssessorado + '"');
-    Logger.log('    Nome: "' + nome + '"');
-    Logger.log('    Marca: "' + marca + '"');
-    
-    // Verificar se tem espaços ou caracteres invisíveis
-    if (id !== id.trim()) {
-      Logger.log('    ⚠️ ATENÇÃO: ID tem espaços extras!');
-    }
-  });
-  
-  Logger.log('');
-  Logger.log('═══════════════════════════════════════');
-  
-  // 3. Testar busca de um ID específico
-  Logger.log('');
-  Logger.log('🧪 TESTANDO BUSCA:');
-  
-  // MUDE AQUI para o ID que você quer testar
-  const idParaTestar = 'C002';
-  
-  Logger.log('Buscando: "' + idParaTestar + '"');
-  
-  const resultado = getChecklistCompleto(idParaTestar);
-  
-  if (resultado) {
-    Logger.log('✅ ENCONTROU!');
-    Logger.log('   Nome: ' + resultado.nomeAssessorado);
-    Logger.log('   Marca: ' + resultado.marca);
-  } else {
-    Logger.log('❌ NÃO ENCONTROU!');
-  }
-}
-
-function testarGenerateId() {
-  Logger.clear();
-  
-  const id1 = generateId('campanha');
-  const id2 = generateId('campanha');
-  const id3 = generateId('campanha');
-  
-  Logger.log('ID 1: ' + id1);
-  Logger.log('ID 2: ' + id2);
-  Logger.log('ID 3: ' + id3);
-}
-
-function criarChecklistManualTeste() {
-  Logger.clear();
-  
-  Logger.log('📋 Criando checklist de teste...');
-  
-  const resultado = criarChecklistCompleto(
-    'C999',           // ID de teste
-    'D001',           // ID assessorado
-    'Teste Manual',   // Nome
-    'Marca Teste'     // Marca
-  );
-  
-  Logger.log('Resultado: ' + JSON.stringify(resultado));
-  
-  if (resultado.success) {
-    Logger.log('✅ Checklist criado!');
-    
-    // Tentar buscar
-    const busca = getChecklistCompleto('C999');
-    
-    if (busca) {
-      Logger.log('✅ E FOI ENCONTRADO!');
-    } else {
-      Logger.log('❌ MAS NÃO FOI ENCONTRADO!');
-    }
-  }
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════
-//                      GOOGLE CALENDAR - EXCLUIR EVENTO
-// ═══════════════════════════════════════════════════════════════════════
-
-/**
- * Exclui um evento do Google Calendar
- * Usado quando uma data de etapa é alterada
- * 
- * @param {string} eventoId - ID do evento
- * @returns {Object} {success, message}
- */
-function excluirEventoCalendar(eventoId) {
-  try {
-    Logger.log('🗑️ Excluindo evento: ' + eventoId);
-    
-    const calendario = CalendarApp.getDefaultCalendar();
-    
-    // Buscar e excluir evento
-    const evento = calendario.getEventById(eventoId);
-    
-    if (evento) {
-      evento.deleteEvent();
-      Logger.log('✅ Evento excluído');
-      return { success: true, message: 'Evento excluído' };
-    } else {
-      Logger.log('⚠️ Evento não encontrado');
-      return { success: false, message: 'Evento não encontrado' };
-    }
-    
-  } catch (e) {
-    Logger.log('❌ excluirEventoCalendar: ' + e);
-    return { success: false, message: e.toString() };
-  }
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════
-//                      GOOGLE CALENDAR - ATUALIZAR EVENTO
-// ═══════════════════════════════════════════════════════════════════════
-
-/**
- * Atualiza a data de um evento existente
- * Exclui o evento antigo e cria um novo
- * 
- * @param {string} eventoIdAntigo - ID do evento a ser excluído
- * @param {string} idCampanha - ID da campanha
- * @param {string} etapa - Etapa do checklist
- * @param {string|Date} novaData - Nova data
- * @param {string} nomeInfluenciador - Nome do influenciador
- * @param {string} marca - Marca
- * @returns {Object} {success, novoEventoId, message}
- */
-function atualizarEventoCalendar(eventoIdAntigo, idCampanha, etapa, novaData, nomeInfluenciador, marca) {
-  try {
-    logInicio('atualizarEventoCalendar');
-    Logger.log('🔄 Evento antigo: ' + eventoIdAntigo);
-    Logger.log('📅 Nova data: ' + novaData);
-    
-    // 1. Excluir evento antigo
-    if (eventoIdAntigo) {
-      const resultExcluir = excluirEventoCalendar(eventoIdAntigo);
-      if (resultExcluir.success) {
-        Logger.log('✅ Evento antigo excluído');
-      } else {
-        Logger.log('⚠️ Não foi possível excluir evento antigo: ' + resultExcluir.message);
-      }
-    }
-    
-    // 2. Criar novo evento
-    const titulo = etapa + ' - ' + marca + ' - ' + nomeInfluenciador;
-    const descricao = 'Campanha: ' + idCampanha;
-    
-    const resultNovo = criarEventoChecklistEtapa(
-      idCampanha,
-      etapa,
-      titulo,
-      descricao,
-      novaData
-    );
-    
-    if (resultNovo.success) {
-      Logger.log('✅ Novo evento criado: ' + resultNovo.eventoId);
-      logFim('atualizarEventoCalendar', true);
-      return {
-        success: true,
-        novoEventoId: resultNovo.eventoId,
-        message: 'Evento atualizado com sucesso'
-      };
-    } else {
-      Logger.log('❌ Erro ao criar novo evento');
-      logFim('atualizarEventoCalendar', false);
-      return resultNovo;
-    }
-    
-  } catch (e) {
-    Logger.log('❌ ERRO em atualizarEventoCalendar: ' + e);
-    logFim('atualizarEventoCalendar', false);
-    return { success: false, message: e.toString() };
-  }
-}
-
 
 // ═══════════════════════════════════════════════════════════════════════
 //                      MOVER ARQUIVO PARA PASTA
@@ -8272,8 +7746,8 @@ function atualizarTemplate(dados) {
   try {
     const sheet = SHEETS.templates;
     const row = findRowById(sheet, dados.id);
-    
-    if (row === -1) {
+
+    if (!row) {
       return {
         success: false,
         message: 'Template não encontrado: ' + dados.id
@@ -8329,9 +7803,9 @@ function getAllNotas() {
     // Verificar se a aba existe, se não, criar
     let sheet;
     try {
-      sheet = SS.getSheetByName('Notas');
+      sheet = SPREADSHEET.getSheetByName('Notas');
       if (!sheet) {
-        sheet = SS.insertSheet('Notas');
+        sheet = SPREADSHEET.insertSheet('Notas');
         sheet.appendRow([
           'ID', 'Titulo', 'Tipo', 'Conteudo', 'ID Relacionado',
           'Data Criacao', 'Ultima Atualizacao', 'Criado Por', 'Status'
@@ -8340,7 +7814,7 @@ function getAllNotas() {
         SpreadsheetApp.flush();
       }
     } catch (e) {
-      sheet = SS.insertSheet('Notas');
+      sheet = SPREADSHEET.insertSheet('Notas');
       sheet.appendRow([
         'ID', 'Titulo', 'Tipo', 'Conteudo', 'ID Relacionado',
         'Data Criacao', 'Ultima Atualizacao', 'Criado Por', 'Status'
@@ -8384,9 +7858,9 @@ function criarNota(dados) {
   try {
     let sheet;
     try {
-      sheet = SS.getSheetByName('Notas');
+      sheet = SPREADSHEET.getSheetByName('Notas');
       if (!sheet) {
-        sheet = SS.insertSheet('Notas');
+        sheet = SPREADSHEET.insertSheet('Notas');
         sheet.appendRow([
           'ID', 'Titulo', 'Tipo', 'Conteudo', 'ID Relacionado',
           'Data Criacao', 'Ultima Atualizacao', 'Criado Por', 'Status'
@@ -8395,7 +7869,7 @@ function criarNota(dados) {
         SpreadsheetApp.flush();
       }
     } catch (e) {
-      sheet = SS.insertSheet('Notas');
+      sheet = SPREADSHEET.insertSheet('Notas');
       sheet.appendRow([
         'ID', 'Titulo', 'Tipo', 'Conteudo', 'ID Relacionado',
         'Data Criacao', 'Ultima Atualizacao', 'Criado Por', 'Status'
@@ -8446,16 +7920,16 @@ function criarNota(dados) {
  */
 function atualizarNota(dados) {
   try {
-    const sheet = SS.getSheetByName('Notas');
+    const sheet = SPREADSHEET.getSheetByName('Notas');
     if (!sheet) {
       return {
         success: false,
         message: 'Aba Notas não encontrada'
       };
     }
-    
+
     const row = findRowById(sheet, dados.id);
-    if (row === -1) {
+    if (!row) {
       return {
         success: false,
         message: 'Nota não encontrada: ' + dados.id
@@ -8492,16 +7966,16 @@ function atualizarNota(dados) {
  */
 function excluirNota(id) {
   try {
-    const sheet = SS.getSheetByName('Notas');
+    const sheet = SPREADSHEET.getSheetByName('Notas');
     if (!sheet) {
       return {
         success: false,
         message: 'Aba Notas não encontrada'
       };
     }
-    
+
     const row = findRowById(sheet, id);
-    if (row === -1) {
+    if (!row) {
       return {
         success: false,
         message: 'Nota não encontrada: ' + id
@@ -8632,8 +8106,8 @@ function recalcularValoresRepasse(idCampanha) {
     // Atualizar no checklist
     const sheet = SHEETS.checklist;
     const row = findRowById(sheet, idCampanha);
-    
-    if (row !== -1) {
+
+    if (row) {
       sheet.getRange(row, 50).setValue(valorTotal);        // Repasse Valor Total
       sheet.getRange(row, 51).setValue(repasseInfluenciador); // Repasse Influenciador
       sheet.getRange(row, 52).setValue(taxaLitte);         // Taxa Litte
