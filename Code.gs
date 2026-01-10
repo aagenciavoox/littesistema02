@@ -315,22 +315,33 @@ function setupSheets() {
 function setupAssessoradosSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName('Assessorados');
-  
+
   if (!sheet) sheet = ss.insertSheet('Assessorados');
-  
+
+  // Estrutura conforme especificacao - 7 abas
   const headers = [
-    'ID', 'Nome', 'Usuario', 'Email', 'Telefone', 'Idade', 'Sapato', 'Camiseta', 'Calça',
-    'Endereço Nome', 'Rua', 'Número', 'Complemento', 'Bairro', 'Cidade', 'Estado', 'CEP',
-    'Status', 'Data Cadastro', 'Observacoes', 'URL Pasta Drive', 'Link Planilha Espelho',
-    'Data Criacao', 'Ultima Atualizacao'
+    // ABA 1: PERFIL (6 campos)
+    'ID', 'Nome', 'Usuario', 'Email', 'Telefone', 'Idade',
+    // ABA 2: LOGISTICA (3 campos)
+    'Camiseta', 'Calca', 'Sapato',
+    // ABA 3: DOCUMENTACAO PF (3 campos)
+    'CPF', 'RG', 'CNPJ Individual',
+    // ABA 4: TESTEMUNHA (5 campos)
+    'Testemunha Nome', 'Testemunha Email', 'Testemunha Telefone', 'Testemunha CPF', 'Testemunha RG',
+    // ABA 5: DADOS EMPRESARIAIS PJ (7 campos)
+    'Razao Social', 'CNPJ', 'Data Criacao PJ', 'Email PJ', 'Endereco PJ', 'Inscricao Municipal', 'Inscricao Estadual',
+    // ABA 6: DADOS BANCARIOS (5 campos)
+    'Tipo Conta', 'Banco', 'Agencia', 'Conta', 'PIX',
+    // ABA 7: SISTEMA (5 campos)
+    'Status', 'Observacoes', 'URL Pasta Drive', 'Data Criacao', 'Ultima Atualizacao'
   ];
-  
+
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold')
-      .setBackground('#667eea').setFontColor('#ffffff');
+      .setBackground('#284239').setFontColor('#ffffff');
   }
-  
+
   sheet.setFrozenRows(1);
   return sheet;
 }
@@ -339,23 +350,33 @@ function setupAssessoradosSheet() {
 function setupAndamentosSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName('Andamentos');
-  
+
   if (!sheet) sheet = ss.insertSheet('Andamentos');
-  
+
+  // Estrutura conforme especificacao - ANDAMENTO (Prospeccao/Negociacao)
   const headers = [
-    'ID Campanha', 'ID Assessorado', 'Marca', 'Objeto Campanha', 'Fase', 'Status Detalhado',
-    'Remetente', 'Responsavel Litte', 'Valor Proposto', 'Valor Fechado', 'Data Criacao',
-    'Link Pasta Campanha', 'Ultimo Retorno', 'Observacoes', 'Descricao Escopo', 'Concluida',
-    'Data Conclusao', 'Ultima Atualizacao', 'Data Primeiro Contato', 'Proximo Follow-Up',
-    'Ultima Interacao', 'Ultima Mensagem'
+    // IDENTIFICACAO
+    'ID Campanha', 'ID Assessorado',
+    // NEGOCIO
+    'Marca', 'Objeto Campanha', 'Escopo Detalhado',
+    // STATUS
+    'Fase', 'Status Detalhado',
+    // FINANCEIRO PREVISTO
+    'Valor Proposto', 'Valor Fechado',
+    // CONTROLE
+    'Responsavel Litte', 'Remetente',
+    // HISTORICO
+    'Data Primeiro Contato', 'Proximo Follow-Up', 'Ultimo Retorno', 'Ultima Mensagem', 'Observacoes',
+    // SISTEMA
+    'Concluida', 'Data Conclusao', 'Link Pasta Campanha', 'Data Criacao', 'Ultima Atualizacao'
   ];
-  
+
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold')
-      .setBackground('#667eea').setFontColor('#ffffff');
+      .setBackground('#284239').setFontColor('#ffffff');
   }
-  
+
   sheet.setFrozenRows(1);
   return sheet;
 }
@@ -386,20 +407,29 @@ function setupCampanhasAtivasSheet() {
 function setupFinanceiroSheetComplete() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName('Financeiro_Complete');
-  
+
   if (!sheet) sheet = ss.insertSheet('Financeiro_Complete');
-  
+
+  // Estrutura conforme especificacao - FINANCEIRO (Faturamento)
   const headers = [
-    'ID Campanha', 'ID Assessorado', 'Nome Assessorado', 'Marca', 'Valor Total',
-    'Status Pag Cliente', 'Status Repasse', 'Status NF', 'Data Criação', 'Última Atualização'
+    // IDENTIFICACAO
+    'ID Campanha', 'ID Assessorado', 'Nome Assessorado', 'Marca',
+    // VALORES
+    'Valor Total', 'Valor Repasse Influenciador', 'Valor Taxa Litte',
+    // NOTA FISCAL
+    'Status NF', 'Tipo NF', 'Numero NF', 'CNPJ Emissor', 'Data Emissao NF', 'Link PDF NF',
+    // PAGAMENTOS
+    'Status Pag Cliente', 'Data Prev Pagamento', 'Status Repasse', 'Data Repasse', 'Link Comprovante',
+    // SISTEMA
+    'Data Criacao', 'Ultima Atualizacao'
   ];
-  
+
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold')
-      .setBackground('#667eea').setFontColor('#ffffff');
+      .setBackground('#284239').setFontColor('#ffffff');
   }
-  
+
   sheet.setFrozenRows(1);
   return sheet;
 }
@@ -3226,109 +3256,58 @@ Logger.log('✅ 5_Campanhas.gs carregado - Gestão de campanhas ativas disponív
 function setupChecklistSheetComplete() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName('Checklist_Complete');
-  
+
   if (!sheet) {
     sheet = ss.insertSheet('Checklist_Complete');
   }
-  
+
+  // Estrutura conforme especificacao - CHECKLIST (Operacao) - 7 ABAS
+  // NF e Repasse movidos para entidade FINANCEIRO
   const headers = [
-    // ═══ IDENTIFICAÇÃO (4 colunas) ═══
-    'ID Campanha',                    // 1
-    'ID Assessorado',                 // 2
-    'Nome Assessorado',               // 3
-    'Marca',                          // 4
-    
-    // ═══ CONTRATO (6 colunas) ═══
-    'Precisa Contrato',               // 5
-    'Status Contrato',                // 6
-    'Data Prev Assinatura',           // 7
-    'Data Real Assinatura',           // 8
-    'Link Contrato',                  // 9
-    'Obs Contrato',                   // 10
-    
-    // ═══ PRODUTO (7 colunas - REMOVIDO Valor) ═══
-    'Precisa Produto',                // 11
-    'Nome Produto',                   // 12
-    'Quantidade',                     // 13
-    'Endereço Envio',                 // 14
-    'Status Produto',                 // 15
-    'Data Envio',                     // 16
-    'Código Rastreio',                // 17
-    'Link Rastreamento',              // 18
-    
-    // ═══ ROTEIRO (9 colunas) ═══
-    'Precisa Roteiro',                // 19
-    'Tipo Roteiro',                   // 20
-    'Num Versões',                    // 21
-    'Status Roteiro',                 // 22
-    'Data Prev Roteiro',              // 23
-    'Data Real Roteiro',              // 24
-    'Data Aprov Roteiro',             // 25
-    'Link Pasta Roteiro',             // 26
-    'Feedback Cliente',               // 27
-    
-    // ═══ CONTEÚDO (3 colunas - NOVO SISTEMA) ═══
-    'Quantidade Conteúdos',           // 28 - Número de conteúdos fechados
-    'Conteúdos JSON',                 // 29 - Array com dados de cada conteúdo
-    'Link Pasta Conteúdo',            // 30 - Link da pasta de conteúdo (AUTO)
-    
-    // ═══ POSTAGEM (5 colunas - REMOVIDOS campos de métrica) ═══
-    'Status Postagem',                // 31
-    'Rede Social',                    // 32
-    'Tipo Post',                      // 33
-    'Data Prev Postagem',             // 34
-    'Horário Postagem',               // 35
-    'Data Real Postagem',             // 36
-    'Link Postagem',                  // 37
-    
-    // ═══ MÉTRICAS (3 colunas - REMOVIDO Métricas Detalhadas) ═══
-    'Data Prev Coleta Métricas',      // 38
-    'Status Métricas',                // 39
-    'Link Pasta Métricas',            // 40 - Link da pasta de métricas (AUTO)
-    
-    // ═══ NF (6 colunas - REMOVIDOS: Impostos, Valor Líquido, Link XML) ═══
-    'Status NF',                      // 41
-    'Tipo NF',                        // 42
-    'Número NF',                      // 43
-    'CNPJ',                           // 44
-    'Data Emissão NF',                // 45
-    'Data Prev Pagamento',            // 46 - NOVO!
-    'Valor NF',                       // 47
-    'Link PDF NF',                    // 48
-    
-    // ═══ REPASSE (6 colunas - AUTO-CALCULADO) ═══
-    'Valor Total Campanha',           // 49 - AUTO (puxado do andamento)
-    'Repasse Influenciador 80%',      // 50 - AUTO (calculado)
-    'Taxa Littê 20%',                 // 51 - AUTO (calculado)
-    'Status Repasse',                 // 52
-    'Data Repasse',                   // 53
-    'Comprovante Repasse',            // 54
-    
-    // ═══ OBSERVAÇÕES E METADATA (3 colunas) ═══
-    'Observações Campanha',           // 55 - NOVO!
-    'Data Criação',                   // 56
-    'Última Atualização'              // 57
+    // IDENTIFICACAO (4 colunas)
+    'ID Campanha', 'ID Assessorado', 'Nome Assessorado', 'Marca',
+
+    // ABA 1: CONTRATO (6 campos)
+    'Precisa Contrato', 'Status Contrato', 'Data Prev Assinatura', 'Data Real Assinatura', 'Link Contrato', 'Obs Contrato',
+
+    // ABA 2: LOGISTICA DE PRODUTO (8 campos)
+    'Precisa Produto', 'Nome Produto', 'Quantidade', 'Status Entrega', 'Endereco Envio', 'Data Envio', 'Codigo Rastreio', 'Link Rastreamento',
+
+    // ABA 3: ROTEIRO (9 campos)
+    'Precisa Roteiro', 'Tipo Roteiro', 'Num Versoes', 'Status Aprovacao', 'Data Prev Roteiro', 'Data Real Roteiro', 'Data Aprovacao', 'Link Google Docs', 'Feedback Cliente',
+
+    // ABA 4: PRODUCAO DE CONTEUDO (3 campos)
+    'Quantidade Conteudos', 'Conteudos JSON', 'Link Pasta Brutos Editados',
+
+    // ABA 5: PUBLICACAO (7 campos)
+    'Status Publicacao', 'Rede Social', 'Tipo Post', 'Data Prev Publicacao', 'Data Real Publicacao', 'Horario Publicacao', 'Link Postagem',
+
+    // ABA 6: ENTREGA FINAL (3 campos)
+    'Data Prev Coleta Metricas', 'Status Coleta', 'Link Pasta Metricas',
+
+    // ABA 7: OBSERVACOES (3 campos)
+    'Observacoes Campanha', 'Data Criacao', 'Ultima Atualizacao'
   ];
-  
-  // Total: 57 colunas
-  
+
+  // Total: 43 colunas
+
   const primeiracelula = sheet.getRange(1, 1).getValue();
-  
+
   if (primeiracelula !== 'ID Campanha') {
-    Logger.log('⚙️ Criando headers do Checklist_Complete...');
-    
+    Logger.log('Criando headers do Checklist_Complete...');
+
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length)
       .setFontWeight('bold')
-      .setBackground('#667eea')
+      .setBackground('#284239')
       .setFontColor('#ffffff');
-    
+
     sheet.setFrozenRows(1);
     SpreadsheetApp.flush();
-    
-    Logger.log('✅ Headers criados - Total: ' + headers.length + ' colunas');
+
+    Logger.log('Headers criados - Total: ' + headers.length + ' colunas');
   }
-  
+
   return sheet;
 }
 
