@@ -8055,6 +8055,54 @@ function atualizarEventoCalendar(eventoIdAntigo, idCampanha, etapa, novaData, no
 
 
 // ============================================================================
+// 5.1. FUNÇÃO - EXCLUIR EVENTO DO CALENDAR
+// ============================================================================
+
+/**
+ * Exclui um evento do Google Calendar
+ * @param {string} eventoId - ID do evento a ser excluído
+ * @returns {Object} {success, message}
+ */
+function excluirEventoCalendar(eventoId) {
+  try {
+    if (!eventoId) {
+      return { success: false, message: 'ID do evento não fornecido' };
+    }
+
+    const props = PropertiesService.getScriptProperties();
+    const calendarId = props.getProperty('CALENDAR_ID');
+
+    if (!calendarId) {
+      Logger.log('⚠️ CALENDAR_ID não configurado');
+      return { success: false, message: 'Calendar ID não configurado' };
+    }
+
+    const calendar = CalendarApp.getCalendarById(calendarId);
+    if (!calendar) {
+      return { success: false, message: 'Calendário não encontrado' };
+    }
+
+    const evento = calendar.getEventById(eventoId);
+    if (evento) {
+      evento.deleteEvent();
+      Logger.log('✅ Evento excluído: ' + eventoId);
+      return { success: true, message: 'Evento excluído com sucesso' };
+    } else {
+      Logger.log('⚠️ Evento não encontrado: ' + eventoId);
+      return { success: false, message: 'Evento não encontrado' };
+    }
+
+  } catch (error) {
+    Logger.log('❌ Erro ao excluir evento: ' + error.toString());
+    return {
+      success: false,
+      message: 'Erro ao excluir evento: ' + error.toString()
+    };
+  }
+}
+
+
+// ============================================================================
 // 6. FUNÇÃO AUXILIAR - CONTAR CONTEÚDOS DO CHECKLIST
 // ============================================================================
 
