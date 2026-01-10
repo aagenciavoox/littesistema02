@@ -1434,119 +1434,215 @@
         .getAssessorado(id);
     }
     
-    function renderModalEditarAssessorado(assessorado) {
+    function renderModalEditarAssessorado(a) {
       const modalHTML = `
         <div id="modal-editar-assessorado" class="fixed inset-0 modal-backdrop flex items-center justify-center z-40 fade-in">
-          <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4">
-            
+          <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden m-4 flex flex-col">
+
             <!-- Header -->
-            <div class="bg-gradient-to-r from-litte-dark to-litte-green text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-lg">
+            <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between">
               <div>
-                <h3 class="text-xl font-bold">✏️ Editar Assessorado</h3>
-                <p class="text-sm text-litte-cream">ID: ${assessorado.id} - ${assessorado.nome}</p>
+                <h3 class="text-xl font-bold">Assessorado: ${a.nome || ''}</h3>
+                <p class="text-sm text-litte-cream">@${a.usuario || ''} - ID: ${a.id}</p>
               </div>
-              <button onclick="closeModal('modal-editar-assessorado')" class="text-2xl hover:text-litte-cream hover:rotate-90 transition-transform">&times;</button>
+              <button onclick="closeModal('modal-editar-assessorado')" class="text-2xl hover:text-litte-cream">&times;</button>
             </div>
-            
-            <!-- Body -->
-            <div class="p-6">
+
+            <!-- Navegacao por Abas -->
+            <div class="border-b border-gray-200 bg-gray-50">
+              <nav class="flex overflow-x-auto px-4">
+                <button onclick="switchAssessoradoTab('perfil')" class="assessorado-tab active px-4 py-3 border-b-2 border-litte-dark text-litte-dark font-medium whitespace-nowrap">Perfil</button>
+                <button onclick="switchAssessoradoTab('logistica')" class="assessorado-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Logistica</button>
+                <button onclick="switchAssessoradoTab('documentacao')" class="assessorado-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Documentacao PF</button>
+                <button onclick="switchAssessoradoTab('testemunha')" class="assessorado-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Testemunha</button>
+                <button onclick="switchAssessoradoTab('pj')" class="assessorado-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Dados PJ</button>
+                <button onclick="switchAssessoradoTab('bancarios')" class="assessorado-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Dados Bancarios</button>
+                <button onclick="switchAssessoradoTab('sistema')" class="assessorado-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Sistema</button>
+              </nav>
+            </div>
+
+            <!-- Conteudo das Abas -->
+            <div class="flex-1 overflow-y-auto p-6">
               <form id="form-editar-assessorado" onsubmit="salvarEdicaoAssessorado(event)">
-                <input type="hidden" name="id" value="${assessorado.id}">
-                
-                <!-- Nome e Usuário -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label class="block text-sm font-medium text-litte-dark mb-2">Nome *</label>
-                    <input type="text" name="nome" value="${assessorado.nome}" required 
-                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-litte-green">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-litte-dark mb-2">Usuário *</label>
-                    <input type="text" name="usuario" value="${assessorado.usuario}" required 
-                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-litte-green">
-                  </div>
-                </div>
-                
-                <!-- Contato -->
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Email</label>
-                    <input type="email" name="email" value="${assessorado.email || ''}" class="w-full px-4 py-2 border rounded-lg">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Telefone</label>
-                    <input type="tel" name="telefone" value="${assessorado.telefone || ''}" class="w-full px-4 py-2 border rounded-lg">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Idade</label>
-                    <input type="number" name="idade" value="${assessorado.idade || ''}" class="w-full px-4 py-2 border rounded-lg">
+                <input type="hidden" name="id" value="${a.id}">
+
+                <!-- ABA 1: PERFIL -->
+                <div id="tab-ass-perfil" class="tab-ass-content">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Perfil do Influenciador</h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">Nome Completo *</label>
+                      <input type="text" name="nome" value="${a.nome || ''}" required class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Usuario (@) *</label>
+                      <input type="text" name="usuario" value="${a.usuario || ''}" required class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Email</label>
+                      <input type="email" name="email" value="${a.email || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Telefone</label>
+                      <input type="tel" name="telefone" value="${a.telefone || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Idade</label>
+                      <input type="number" name="idade" value="${a.idade || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
                   </div>
                 </div>
-                
-                <!-- Observações e Status -->
-                <div class="grid grid-cols-4 gap-4 mb-4">
-                  <div class="col-span-3">
-                    <label class="block text-sm font-medium mb-2">Observações</label>
-                    <textarea name="observacoes" rows="3" class="w-full px-4 py-2 border rounded-lg">${assessorado.observacoes || ''}</textarea>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Status</label>
-                    <select name="status" class="w-full px-4 py-2 border rounded-lg">
-                      <option value="Ativo" ${assessorado.status === 'Ativo' ? 'selected' : ''}>✅ Ativo</option>
-                      <option value="Inativo" ${assessorado.status !== 'Ativo' ? 'selected' : ''}>❌ Inativo</option>
-                    </select>
+
+                <!-- ABA 2: LOGISTICA -->
+                <div id="tab-ass-logistica" class="tab-ass-content hidden">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Logistica / Tamanhos</h4>
+                  <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">Camiseta</label>
+                      <select name="camiseta" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="">Selecione</option>
+                        ${['PP','P','M','G','GG','XG'].map(t => '<option value="'+t+'" '+(a.camiseta===t?'selected':'')+'>'+t+'</option>').join('')}
+                      </select></div>
+                    <div><label class="block text-sm font-medium mb-1">Calca</label>
+                      <input type="text" name="calca" value="${a.calca || ''}" class="w-full px-3 py-2 border rounded-lg" placeholder="Ex: 38, 40, 42"></div>
+                    <div><label class="block text-sm font-medium mb-1">Sapato</label>
+                      <select name="sapato" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="">Selecione</option>
+                        ${[33,34,35,36,37,38,39,40,41,42,43,44].map(n => '<option value="'+n+'" '+(a.sapato==n?'selected':'')+'>'+n+'</option>').join('')}
+                      </select></div>
                   </div>
                 </div>
-                
-                <!-- Botões -->
-                <div class="flex gap-2 justify-end pt-4 border-t-2">
-                  <button type="button" onclick="closeModal('modal-editar-assessorado')" 
-                    class="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50">
-                    Cancelar
-                  </button>
-                  <button type="submit" class="btn-primary px-6 py-2 rounded-lg">
-                    💾 Salvar
-                  </button>
+
+                <!-- ABA 3: DOCUMENTACAO PF -->
+                <div id="tab-ass-documentacao" class="tab-ass-content hidden">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Documentacao Pessoa Fisica</h4>
+                  <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">CPF</label>
+                      <input type="text" name="cpf" value="${a.cpf || ''}" class="w-full px-3 py-2 border rounded-lg" placeholder="000.000.000-00"></div>
+                    <div><label class="block text-sm font-medium mb-1">RG</label>
+                      <input type="text" name="rg" value="${a.rg || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">CNPJ Individual</label>
+                      <input type="text" name="cnpjIndividual" value="${a.cnpjIndividual || ''}" class="w-full px-3 py-2 border rounded-lg" placeholder="00.000.000/0000-00"></div>
+                  </div>
+                </div>
+
+                <!-- ABA 4: TESTEMUNHA -->
+                <div id="tab-ass-testemunha" class="tab-ass-content hidden">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Dados da Testemunha</h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">Nome Completo</label>
+                      <input type="text" name="testemunhaNome" value="${a.testemunhaNome || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Email</label>
+                      <input type="email" name="testemunhaEmail" value="${a.testemunhaEmail || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Telefone</label>
+                      <input type="tel" name="testemunhaTelefone" value="${a.testemunhaTelefone || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">CPF</label>
+                      <input type="text" name="testemunhaCpf" value="${a.testemunhaCpf || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">RG</label>
+                      <input type="text" name="testemunhaRg" value="${a.testemunhaRg || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                  </div>
+                </div>
+
+                <!-- ABA 5: DADOS PJ -->
+                <div id="tab-ass-pj" class="tab-ass-content hidden">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Dados Empresariais (PJ)</h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">Razao Social</label>
+                      <input type="text" name="razaoSocial" value="${a.razaoSocial || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">CNPJ</label>
+                      <input type="text" name="cnpj" value="${a.cnpj || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Data de Criacao</label>
+                      <input type="date" name="dataCriacaoPJ" value="${a.dataCriacaoPJ || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Email PJ</label>
+                      <input type="email" name="emailPJ" value="${a.emailPJ || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div class="col-span-2"><label class="block text-sm font-medium mb-1">Endereco PJ</label>
+                      <input type="text" name="enderecoPJ" value="${a.enderecoPJ || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Inscricao Municipal</label>
+                      <input type="text" name="inscricaoMunicipal" value="${a.inscricaoMunicipal || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Inscricao Estadual</label>
+                      <input type="text" name="inscricaoEstadual" value="${a.inscricaoEstadual || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                  </div>
+                </div>
+
+                <!-- ABA 6: DADOS BANCARIOS -->
+                <div id="tab-ass-bancarios" class="tab-ass-content hidden">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Dados Bancarios</h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">Tipo de Conta</label>
+                      <select name="tipoConta" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="">Selecione</option>
+                        <option value="PF" ${a.tipoConta==='PF'?'selected':''}>Pessoa Fisica (PF)</option>
+                        <option value="PJ" ${a.tipoConta==='PJ'?'selected':''}>Pessoa Juridica (PJ)</option>
+                      </select></div>
+                    <div><label class="block text-sm font-medium mb-1">Banco</label>
+                      <input type="text" name="banco" value="${a.banco || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Agencia</label>
+                      <input type="text" name="agencia" value="${a.agencia || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div><label class="block text-sm font-medium mb-1">Conta</label>
+                      <input type="text" name="conta" value="${a.conta || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                    <div class="col-span-2"><label class="block text-sm font-medium mb-1">Chave PIX</label>
+                      <input type="text" name="pix" value="${a.pix || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                  </div>
+                </div>
+
+                <!-- ABA 7: SISTEMA -->
+                <div id="tab-ass-sistema" class="tab-ass-content hidden">
+                  <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Sistema / Observacoes</h4>
+                  <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div><label class="block text-sm font-medium mb-1">ID</label>
+                      <input type="text" value="${a.id || ''}" class="w-full px-3 py-2 border rounded-lg bg-gray-100" readonly></div>
+                    <div><label class="block text-sm font-medium mb-1">Status</label>
+                      <select name="status" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="Ativo" ${a.status==='Ativo'?'selected':''}>Ativo</option>
+                        <option value="Inativo" ${a.status!=='Ativo'?'selected':''}>Inativo</option>
+                      </select></div>
+                  </div>
+                  <div><label class="block text-sm font-medium mb-1">Observacoes</label>
+                    <textarea name="observacoes" rows="4" class="w-full px-3 py-2 border rounded-lg">${a.observacoes || ''}</textarea></div>
+                  ${a.urlPastaDrive ? '<div class="mt-4"><a href="'+a.urlPastaDrive+'" target="_blank" class="text-blue-600 hover:underline">Abrir Pasta Drive</a></div>' : ''}
+                </div>
+
+                <!-- Botoes -->
+                <div class="flex gap-2 justify-end pt-6 border-t mt-6">
+                  <button type="button" onclick="closeModal('modal-editar-assessorado')" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Fechar</button>
+                  <button type="submit" class="btn-primary px-6 py-2 rounded-lg">Salvar</button>
                 </div>
               </form>
             </div>
           </div>
         </div>
       `;
-      
+
       document.getElementById('modals-container').innerHTML = modalHTML;
     }
-    
+
+    function switchAssessoradoTab(tabName) {
+      document.querySelectorAll('.assessorado-tab').forEach(tab => {
+        tab.classList.remove('active', 'border-litte-dark', 'text-litte-dark');
+        tab.classList.add('border-transparent');
+      });
+      document.querySelectorAll('.tab-ass-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      event.target.classList.add('active', 'border-litte-dark', 'text-litte-dark');
+      event.target.classList.remove('border-transparent');
+      document.getElementById('tab-ass-' + tabName).classList.remove('hidden');
+    }
+
     function salvarEdicaoAssessorado(event) {
       event.preventDefault();
-      
       const form = event.target;
       const formData = new FormData(form);
-      
-      const dados = {
-        id: formData.get('id'),
-        nome: formData.get('nome'),
-        usuario: formData.get('usuario'),
-        email: formData.get('email'),
-        telefone: formData.get('telefone'),
-        idade: formData.get('idade'),
-        observacoes: formData.get('observacoes'),
-        status: formData.get('status')
-      };
-      
+      const dados = {};
+      for (let pair of formData.entries()) {
+        dados[pair[0]] = pair[1];
+      }
+
+      showLoading('Salvando...');
       google.script.run
         .withSuccessHandler(function(result) {
+          hideLoading();
           if (result.success) {
             closeModal('modal-editar-assessorado');
-            showToast('✅ Assessorado atualizado!', 'success');
+            showToast('Assessorado atualizado!', 'success');
             cachedData.assessorados = null;
             setTimeout(function() { renderAssessorados(); }, 500);
           } else {
-            showToast('❌ Erro: ' + result.message, 'error');
+            showToast('Erro: ' + result.message, 'error');
           }
         })
         .withFailureHandler(function(error) {
-          showToast('❌ Erro ao salvar', 'error');
+          hideLoading();
+          showToast('Erro ao salvar', 'error');
           console.error(error);
         })
         .atualizarAssessorado(dados);
@@ -2775,136 +2871,225 @@ function openModalChecklist(idCampanha) {
 }
 
 function renderModalChecklist(checklist) {
+  const c = checklist;
   const modalHTML = `
     <div id="modal-checklist" class="fixed inset-0 modal-backdrop flex items-center justify-center z-40 fade-in">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto m-4">
-        
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden m-4 flex flex-col">
+
         <!-- Header -->
-        <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between">
           <div>
-            <h3 class="text-xl font-bold">📋 Checklist Completo</h3>
-            <p class="text-sm text-litte-cream">${checklist.marca} - ${checklist.nomeAssessorado}</p>
+            <h3 class="text-xl font-bold">Checklist: ${c.marca || ''}</h3>
+            <p class="text-sm text-litte-cream">${c.nomeAssessorado || ''} - ID: ${c.idCampanha}</p>
           </div>
           <button onclick="closeModal('modal-checklist')" class="text-2xl hover:text-litte-cream">&times;</button>
         </div>
-        
-        <!-- Body com Abas -->
-        <div class="p-6">
-          
-          <!-- Tabs Navigation -->
-          <div class="border-b border-gray-200 mb-6">
-            <nav class="flex gap-4">
-              <button onclick="switchChecklistTab('contrato')" 
-                class="checklist-tab active px-4 py-2 border-b-2 border-litte-dark font-medium">
-                📝 Contrato
-              </button>
-              <button onclick="switchChecklistTab('produto')" 
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                📦 Produto
-              </button>
-              <button onclick="switchChecklistTab('roteiro')" 
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                🎬 Roteiro
-              </button>
-              <button onclick="switchChecklistTab('conteudo')" 
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                ✅ Conteúdo
-              </button>
-              <button onclick="switchChecklistTab('postagem')" 
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                🚀 Postagem
-              </button>
-              <button onclick="switchChecklistTab('metricas')" 
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                📊 Métricas
-              </button>
-              <button onclick="switchChecklistTab('nf')" 
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                🧾 NF
-              </button>
-              <button onclick="switchChecklistTab('repasse')"
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                💸 Repasse
-              </button>
-              <button onclick="switchChecklistTab('observacoes')"
-                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
-                📝 Observacoes
-              </button>
-            </nav>
-          </div>
-          
-          <!-- Tab Content -->
-          <form id="form-checklist" onsubmit="salvarChecklist(event)">
-            <input type="hidden" name="idCampanha" value="${checklist.idCampanha}">
-            
-            <!-- ABA: CONTRATO -->
-            <div id="tab-contrato" class="tab-content">
-              ${renderTabContrato(checklist)}
-            </div>
-            
-            <!-- ABA: PRODUTO -->
-            <div id="tab-produto" class="tab-content hidden">
-              ${renderTabProduto(checklist)}
-            </div>
-            
-            <!-- ABA: ROTEIRO -->
-            <div id="tab-roteiro" class="tab-content hidden">
-              ${renderTabRoteiro(checklist)}
-            </div>
-            
-            <!-- ABA: CONTEÚDO -->
-            <div id="tab-conteudo" class="tab-content hidden">
-              ${renderTabConteudo(checklist)}
-            </div>
-            
-            <!-- ABA: POSTAGEM -->
-            <div id="tab-postagem" class="tab-content hidden">
-              ${renderTabPostagem(checklist)}
-            </div>
-            
-            <!-- ABA: MÉTRICAS -->
-            <div id="tab-metricas" class="tab-content hidden">
-              ${renderTabMetricas(checklist)}
-            </div>
-            
-            <!-- ABA: NF -->
-            <div id="tab-nf" class="tab-content hidden">
-              ${renderTabNF(checklist)}
-            </div>
-            
-            <!-- ABA: REPASSE -->
-            <div id="tab-repasse" class="tab-content hidden">
-              ${renderTabRepasse(checklist)}
-            </div>
 
-            <!-- ABA: OBSERVACOES -->
-            <div id="tab-observacoes" class="tab-content hidden">
-              ${renderTabObservacoes(checklist)}
-            </div>
-
-            <!-- Botões -->
-            <div class="flex gap-2 justify-end pt-6 border-t border-gray-200 mt-6">
-              <button type="button" onclick="closeModal('modal-checklist')" 
-                class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Fechar
-              </button>
-              <button type="submit" 
-                class="btn-primary px-6 py-2 rounded-lg flex items-center gap-2">
-                <span id="btn-save-checklist-spinner" class="hidden">
-                  <div class="spinner"></div>
-                </span>
-                <span id="btn-save-checklist-text">💾 Salvar Alterações</span>
-              </button>
-            </div>
-            
-          </form>
-          
+        <!-- Navegacao por Abas - 7 ABAS CONFORME ESPECIFICACAO -->
+        <div class="border-b border-gray-200 bg-gray-50">
+          <nav class="flex overflow-x-auto px-4">
+            <button onclick="switchChecklistTab('contrato')" class="checklist-tab active px-4 py-3 border-b-2 border-litte-dark text-litte-dark font-medium whitespace-nowrap">Contrato</button>
+            <button onclick="switchChecklistTab('logistica')" class="checklist-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Logistica Produto</button>
+            <button onclick="switchChecklistTab('roteiro')" class="checklist-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Roteiro</button>
+            <button onclick="switchChecklistTab('producao')" class="checklist-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Producao Conteudo</button>
+            <button onclick="switchChecklistTab('publicacao')" class="checklist-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Publicacao</button>
+            <button onclick="switchChecklistTab('entrega')" class="checklist-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Entrega Final</button>
+            <button onclick="switchChecklistTab('observacoes')" class="checklist-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap">Observacoes</button>
+          </nav>
         </div>
-        
+
+        <!-- Conteudo das Abas -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <form id="form-checklist" onsubmit="salvarChecklist(event)">
+            <input type="hidden" name="idCampanha" value="${c.idCampanha}">
+
+            <!-- ABA 1: CONTRATO -->
+            <div id="tab-contrato" class="tab-content">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Contrato</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Precisa Contrato</label>
+                  <select name="precisaContrato" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Sim" ${c.precisaContrato==='Sim'?'selected':''}>Sim</option>
+                    <option value="Nao" ${c.precisaContrato==='Nao'?'selected':''}>Nao</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Status</label>
+                  <select name="statusContrato" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Nao iniciado" ${c.statusContrato==='Nao iniciado'?'selected':''}>Nao iniciado</option>
+                    <option value="Aguardando assinatura" ${c.statusContrato==='Aguardando assinatura'?'selected':''}>Aguardando assinatura</option>
+                    <option value="Assinado" ${c.statusContrato==='Assinado'?'selected':''}>Assinado</option>
+                    <option value="Enviado" ${c.statusContrato==='Enviado'?'selected':''}>Enviado para marca</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Data Prevista</label>
+                  <input type="date" name="dataPrevAssinatura" value="${c.dataPrevAssinatura || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Data Real</label>
+                  <input type="date" name="dataRealAssinatura" value="${c.dataRealAssinatura || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Link do Arquivo</label>
+                  <input type="url" name="linkContrato" value="${c.linkContrato || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Observacoes</label>
+                  <input type="text" name="obsContrato" value="${c.obsContrato || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+              </div>
+            </div>
+
+            <!-- ABA 2: LOGISTICA DE PRODUTO -->
+            <div id="tab-logistica" class="tab-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Logistica de Produto</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Precisa Produto</label>
+                  <select name="precisaProduto" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Sim" ${c.precisaProduto==='Sim'?'selected':''}>Sim</option>
+                    <option value="Nao" ${c.precisaProduto==='Nao'?'selected':''}>Nao</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Nome do Produto</label>
+                  <input type="text" name="nomeProduto" value="${c.nomeProduto || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Quantidade</label>
+                  <input type="number" name="quantidade" value="${c.quantidade || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Status de Entrega</label>
+                  <select name="statusEntrega" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Aguardando envio" ${c.statusEntrega==='Aguardando envio'?'selected':''}>Aguardando envio</option>
+                    <option value="Enviado" ${c.statusEntrega==='Enviado'?'selected':''}>Enviado</option>
+                    <option value="Recebido" ${c.statusEntrega==='Recebido'?'selected':''}>Recebido</option>
+                    <option value="Devolvido" ${c.statusEntrega==='Devolvido'?'selected':''}>Devolvido</option>
+                  </select></div>
+                <div class="col-span-2"><label class="block text-sm font-medium mb-1">Endereco de Envio</label>
+                  <textarea name="enderecoEnvio" rows="2" class="w-full px-3 py-2 border rounded-lg">${c.enderecoEnvio || ''}</textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Data de Envio</label>
+                  <input type="date" name="dataEnvio" value="${c.dataEnvio || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Codigo de Rastreio</label>
+                  <input type="text" name="codigoRastreio" value="${c.codigoRastreio || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div class="col-span-2"><label class="block text-sm font-medium mb-1">Link de Rastreamento</label>
+                  <input type="url" name="linkRastreamento" value="${c.linkRastreamento || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+              </div>
+            </div>
+
+            <!-- ABA 3: ROTEIRO -->
+            <div id="tab-roteiro" class="tab-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Roteiro</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Precisa Roteiro</label>
+                  <select name="precisaRoteiro" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Sim" ${c.precisaRoteiro==='Sim'?'selected':''}>Sim</option>
+                    <option value="Nao" ${c.precisaRoteiro==='Nao'?'selected':''}>Nao</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Tipo</label>
+                  <input type="text" name="tipoRoteiro" value="${c.tipoRoteiro || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Numero de Versoes</label>
+                  <input type="number" name="numVersoes" value="${c.numVersoes || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Status de Aprovacao</label>
+                  <select name="statusAprovacao" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Aguardando" ${c.statusAprovacao==='Aguardando'?'selected':''}>Aguardando</option>
+                    <option value="Em revisao" ${c.statusAprovacao==='Em revisao'?'selected':''}>Em revisao</option>
+                    <option value="Aprovado" ${c.statusAprovacao==='Aprovado'?'selected':''}>Aprovado</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Data Prevista</label>
+                  <input type="date" name="dataPrevRoteiro" value="${c.dataPrevRoteiro || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Data Real</label>
+                  <input type="date" name="dataRealRoteiro" value="${c.dataRealRoteiro || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Data de Aprovacao</label>
+                  <input type="date" name="dataAprovacao" value="${c.dataAprovacao || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Link Google Docs</label>
+                  <input type="url" name="linkGoogleDocs" value="${c.linkGoogleDocs || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div class="col-span-2"><label class="block text-sm font-medium mb-1">Feedback do Cliente</label>
+                  <textarea name="feedbackCliente" rows="2" class="w-full px-3 py-2 border rounded-lg">${c.feedbackCliente || ''}</textarea></div>
+              </div>
+            </div>
+
+            <!-- ABA 4: PRODUCAO DE CONTEUDO -->
+            <div id="tab-producao" class="tab-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Producao de Conteudo</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Quantidade de Conteudos</label>
+                  <input type="number" name="quantidadeConteudos" value="${c.quantidadeConteudos || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Link Pasta Brutos/Editados</label>
+                  <input type="url" name="linkPastaBrutosEditados" value="${c.linkPastaBrutosEditados || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+              </div>
+              <div class="mt-4">
+                <label class="block text-sm font-medium mb-1">Lista de Conteudos (JSON)</label>
+                <textarea name="conteudosJSON" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm">${c.conteudosJSON || '[]'}</textarea>
+              </div>
+            </div>
+
+            <!-- ABA 5: PUBLICACAO -->
+            <div id="tab-publicacao" class="tab-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Publicacao</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Status</label>
+                  <select name="statusPublicacao" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Agendado" ${c.statusPublicacao==='Agendado'?'selected':''}>Agendado</option>
+                    <option value="Postado" ${c.statusPublicacao==='Postado'?'selected':''}>Postado</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Rede Social</label>
+                  <select name="redeSocial" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Instagram" ${c.redeSocial==='Instagram'?'selected':''}>Instagram</option>
+                    <option value="TikTok" ${c.redeSocial==='TikTok'?'selected':''}>TikTok</option>
+                    <option value="YouTube" ${c.redeSocial==='YouTube'?'selected':''}>YouTube</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Tipo de Post</label>
+                  <select name="tipoPost" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Reels" ${c.tipoPost==='Reels'?'selected':''}>Reels</option>
+                    <option value="Stories" ${c.tipoPost==='Stories'?'selected':''}>Stories</option>
+                    <option value="Feed" ${c.tipoPost==='Feed'?'selected':''}>Feed</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Data Prevista</label>
+                  <input type="date" name="dataPrevPublicacao" value="${c.dataPrevPublicacao || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Data Real</label>
+                  <input type="date" name="dataRealPublicacao" value="${c.dataRealPublicacao || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Horario</label>
+                  <input type="time" name="horarioPublicacao" value="${c.horarioPublicacao || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div class="col-span-2"><label class="block text-sm font-medium mb-1">Link da Postagem</label>
+                  <input type="url" name="linkPostagem" value="${c.linkPostagem || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+              </div>
+            </div>
+
+            <!-- ABA 6: ENTREGA FINAL -->
+            <div id="tab-entrega" class="tab-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Entrega Final</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Data Prevista Coleta Metricas</label>
+                  <input type="date" name="dataPrevColetaMetricas" value="${c.dataPrevColetaMetricas || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Status de Coleta</label>
+                  <select name="statusColeta" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="Pendente" ${c.statusColeta==='Pendente'?'selected':''}>Pendente</option>
+                    <option value="Coletado" ${c.statusColeta==='Coletado'?'selected':''}>Coletado</option>
+                  </select></div>
+                <div class="col-span-2"><label class="block text-sm font-medium mb-1">Link Pasta Metricas</label>
+                  <input type="url" name="linkPastaMetricas" value="${c.linkPastaMetricas || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+              </div>
+            </div>
+
+            <!-- ABA 7: OBSERVACOES -->
+            <div id="tab-observacoes" class="tab-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Observacoes</h4>
+              <div>
+                <label class="block text-sm font-medium mb-1">Observacoes da Campanha</label>
+                <textarea name="observacoesCampanha" rows="8" class="w-full px-3 py-2 border rounded-lg">${c.observacoesCampanha || ''}</textarea>
+              </div>
+            </div>
+
+            <!-- Botoes -->
+            <div class="flex gap-2 justify-end pt-6 border-t mt-6">
+              <button type="button" onclick="closeModal('modal-checklist')" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Fechar</button>
+              <button type="submit" class="btn-primary px-6 py-2 rounded-lg flex items-center gap-2">
+                <span id="btn-save-checklist-spinner" class="hidden"><div class="spinner"></div></span>
+                <span id="btn-save-checklist-text">Salvar</span>
+              </button>
+            </div>
+
+          </form>
+        </div>
       </div>
     </div>
   `;
-  
+
   document.getElementById('modals-container').innerHTML = modalHTML;
 }
 
@@ -3613,83 +3798,133 @@ function openModalFinanceiroCampanha(idCampanha) {
     .getFinanceiroCampanha(idCampanha);
 }
 
-function renderModalFinanceiro(fin) {
+function renderModalFinanceiro(f) {
+  // Calcular valores automaticos
+  const valorTotal = parseFloat(f.valorTotal) || 0;
+  const valorRepasse = (valorTotal * 0.8).toFixed(2);
+  const valorTaxa = (valorTotal * 0.2).toFixed(2);
+
   const modalHTML = `
     <div id="modal-financeiro" class="fixed inset-0 modal-backdrop flex items-center justify-center z-40 fade-in">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden m-4 flex flex-col">
 
         <!-- Header -->
-        <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between">
           <div>
-            <h3 class="text-xl font-bold">Financeiro da Campanha</h3>
-            <p class="text-sm text-litte-cream">${fin.marca || ''} - ${fin.nomeAssessorado || ''}</p>
+            <h3 class="text-xl font-bold">Financeiro: ${f.marca || ''}</h3>
+            <p class="text-sm text-litte-cream">${f.nomeAssessorado || ''} - ID: ${f.idCampanha}</p>
           </div>
           <button onclick="closeModal('modal-financeiro')" class="text-2xl hover:text-litte-cream">&times;</button>
         </div>
 
+        <!-- Navegacao por Abas -->
+        <div class="border-b border-gray-200 bg-gray-50">
+          <nav class="flex px-4">
+            <button onclick="switchFinanceiroTab('valores')" class="financeiro-tab active px-4 py-3 border-b-2 border-litte-dark text-litte-dark font-medium">Valores</button>
+            <button onclick="switchFinanceiroTab('nf')" class="financeiro-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300">Nota Fiscal</button>
+            <button onclick="switchFinanceiroTab('pagamentos')" class="financeiro-tab px-4 py-3 border-b-2 border-transparent hover:border-gray-300">Pagamentos</button>
+          </nav>
+        </div>
+
         <!-- Body -->
-        <div class="p-6">
+        <div class="flex-1 overflow-y-auto p-6">
           <form id="form-financeiro" onsubmit="salvarFinanceiro(event)">
-            <input type="hidden" name="idCampanha" value="${fin.idCampanha || ''}">
+            <input type="hidden" name="idCampanha" value="${f.idCampanha || ''}">
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label class="block text-sm font-medium mb-2">Valor Total</label>
-                <input type="number" name="valorTotal" step="0.01" value="${fin.valorTotal || ''}"
-                  class="w-full px-4 py-2 border rounded-lg" readonly>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-2">Status Pagamento Cliente</label>
-                <select name="statusPagCliente" class="w-full px-4 py-2 border rounded-lg">
-                  <option value="PENDENTE" ${fin.statusPagCliente === 'PENDENTE' ? 'selected' : ''}>Pendente</option>
-                  <option value="PARCIAL" ${fin.statusPagCliente === 'PARCIAL' ? 'selected' : ''}>Parcial</option>
-                  <option value="PAGO" ${fin.statusPagCliente === 'PAGO' ? 'selected' : ''}>Pago</option>
-                </select>
+            <!-- ABA: VALORES -->
+            <div id="tab-fin-valores" class="tab-fin-content">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Valores</h4>
+              <div class="grid grid-cols-3 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Valor Total Fechado</label>
+                  <input type="number" name="valorTotal" step="0.01" value="${f.valorTotal || ''}" class="w-full px-3 py-2 border rounded-lg bg-gray-100" readonly></div>
+                <div><label class="block text-sm font-medium mb-1">Repasse Influenciador (80%)</label>
+                  <input type="text" value="R$ ${valorRepasse}" class="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700" readonly></div>
+                <div><label class="block text-sm font-medium mb-1">Taxa Litte (20%)</label>
+                  <input type="text" value="R$ ${valorTaxa}" class="w-full px-3 py-2 border rounded-lg bg-blue-50 text-blue-700" readonly></div>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label class="block text-sm font-medium mb-2">Status NF</label>
-                <select name="statusNF" class="w-full px-4 py-2 border rounded-lg">
-                  <option value="A EMITIR" ${fin.statusNF === 'A EMITIR' ? 'selected' : ''}>A Emitir</option>
-                  <option value="EMITIDA" ${fin.statusNF === 'EMITIDA' ? 'selected' : ''}>Emitida</option>
-                  <option value="ENVIADA" ${fin.statusNF === 'ENVIADA' ? 'selected' : ''}>Enviada</option>
-                </select>
+            <!-- ABA: NOTA FISCAL -->
+            <div id="tab-fin-nf" class="tab-fin-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Nota Fiscal</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Status NF</label>
+                  <select name="statusNF" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="A EMITIR" ${f.statusNF==='A EMITIR'?'selected':''}>A Emitir</option>
+                    <option value="EMITIDA" ${f.statusNF==='EMITIDA'?'selected':''}>Emitida</option>
+                    <option value="ENVIADA" ${f.statusNF==='ENVIADA'?'selected':''}>Enviada</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Tipo NF</label>
+                  <select name="tipoNF" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="NFe" ${f.tipoNF==='NFe'?'selected':''}>NFe</option>
+                    <option value="NFSe" ${f.tipoNF==='NFSe'?'selected':''}>NFSe</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Numero da NF</label>
+                  <input type="text" name="numeroNF" value="${f.numeroNF || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">CNPJ Emissor</label>
+                  <input type="text" name="cnpjEmissor" value="${f.cnpjEmissor || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Data de Emissao</label>
+                  <input type="date" name="dataEmissaoNF" value="${f.dataEmissaoNF || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Link PDF NF</label>
+                  <input type="url" name="linkPdfNF" value="${f.linkPdfNF || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
               </div>
+            </div>
 
-              <div>
-                <label class="block text-sm font-medium mb-2">Status Repasse</label>
-                <select name="statusRepasse" class="w-full px-4 py-2 border rounded-lg">
-                  <option value="AGUARDANDO NF" ${fin.statusRepasse === 'AGUARDANDO NF' ? 'selected' : ''}>Aguardando NF</option>
-                  <option value="PENDENTE" ${fin.statusRepasse === 'PENDENTE' ? 'selected' : ''}>Pendente</option>
-                  <option value="PARCIAL" ${fin.statusRepasse === 'PARCIAL' ? 'selected' : ''}>Parcial</option>
-                  <option value="CONCLUIDO" ${fin.statusRepasse === 'CONCLUIDO' ? 'selected' : ''}>Concluido</option>
-                </select>
+            <!-- ABA: PAGAMENTOS -->
+            <div id="tab-fin-pagamentos" class="tab-fin-content hidden">
+              <h4 class="text-lg font-bold text-litte-dark mb-4 border-b pb-2">Pagamentos</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">Status Pagamento (Cliente)</label>
+                  <select name="statusPagCliente" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="PENDENTE" ${f.statusPagCliente==='PENDENTE'?'selected':''}>Pendente</option>
+                    <option value="PARCIAL" ${f.statusPagCliente==='PARCIAL'?'selected':''}>Parcial</option>
+                    <option value="PAGO" ${f.statusPagCliente==='PAGO'?'selected':''}>Pago</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Data Prevista Pagamento</label>
+                  <input type="date" name="dataPrevPagamento" value="${f.dataPrevPagamento || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Status Repasse (Agencia > Influenciador)</label>
+                  <select name="statusRepasse" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Selecione</option>
+                    <option value="AGUARDANDO NF" ${f.statusRepasse==='AGUARDANDO NF'?'selected':''}>Aguardando NF</option>
+                    <option value="PENDENTE" ${f.statusRepasse==='PENDENTE'?'selected':''}>Pendente</option>
+                    <option value="PARCIAL" ${f.statusRepasse==='PARCIAL'?'selected':''}>Parcial</option>
+                    <option value="CONCLUIDO" ${f.statusRepasse==='CONCLUIDO'?'selected':''}>Concluido</option>
+                  </select></div>
+                <div><label class="block text-sm font-medium mb-1">Data do Repasse</label>
+                  <input type="date" name="dataRepasse" value="${f.dataRepasse || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div class="col-span-2"><label class="block text-sm font-medium mb-1">Link do Comprovante</label>
+                  <input type="url" name="linkComprovante" value="${f.linkComprovante || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
               </div>
             </div>
 
             <!-- Botoes -->
-            <div class="flex gap-2 justify-end pt-6 border-t border-gray-200 mt-6">
-              <button type="button" onclick="closeModal('modal-financeiro')"
-                class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Fechar
-              </button>
-              <button type="submit"
-                class="btn-primary px-6 py-2 rounded-lg">
-                Salvar
-              </button>
+            <div class="flex gap-2 justify-end pt-6 border-t mt-6">
+              <button type="button" onclick="closeModal('modal-financeiro')" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Fechar</button>
+              <button type="submit" class="btn-primary px-6 py-2 rounded-lg">Salvar</button>
             </div>
-
           </form>
         </div>
-
       </div>
     </div>
   `;
 
   document.getElementById('modals-container').innerHTML = modalHTML;
+}
+
+function switchFinanceiroTab(tabName) {
+  document.querySelectorAll('.financeiro-tab').forEach(tab => {
+    tab.classList.remove('active', 'border-litte-dark', 'text-litte-dark');
+    tab.classList.add('border-transparent');
+  });
+  document.querySelectorAll('.tab-fin-content').forEach(content => {
+    content.classList.add('hidden');
+  });
+  event.target.classList.add('active', 'border-litte-dark', 'text-litte-dark');
+  event.target.classList.remove('border-transparent');
+  document.getElementById('tab-fin-' + tabName).classList.remove('hidden');
 }
 
 function salvarFinanceiro(event) {
