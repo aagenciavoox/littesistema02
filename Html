@@ -755,15 +755,79 @@
     
     function verDetalhesCampanha(idCampanha) {
       // Redirecionar para campanhas e abrir detalhes
-      renderCampanhasAtivas();
+      renderCampanhas();
       setTimeout(function() {
-        verDetalhesChecklist(idCampanha);
+        openModalChecklist(idCampanha);
       }, 500);
     }
     
     function refreshDashboard() {
       renderDashboard();
     }
+
+    // Alias para funções de navegação
+    function renderHistorico() {
+      document.getElementById('view-title').textContent = 'Historico';
+      document.getElementById('view-subtitle').textContent = 'Todas as atividades do sistema';
+      document.getElementById('view-actions').innerHTML = `
+        <button onclick="renderDashboard()" class="btn-secondary px-4 py-2 rounded-lg flex items-center gap-2">
+          <span>←</span>
+          <span>Voltar ao Dashboard</span>
+        </button>
+      `;
+
+      document.getElementById('view-content').innerHTML = `
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+          <div class="spinner mx-auto mb-4"></div>
+          <p class="text-gray-600">Carregando historico...</p>
+        </div>
+      `;
+
+      google.script.run
+        .withSuccessHandler(function(atividades) {
+          if (atividades && atividades.length > 0) {
+            let html = '<div class="bg-white rounded-lg shadow overflow-hidden"><div class="divide-y divide-gray-200">';
+            atividades.forEach(function(a) {
+              html += `
+                <div class="p-4 hover:bg-gray-50">
+                  <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                      <p class="font-medium text-litte-dark">${a.acao || 'Acao'}</p>
+                      <p class="text-sm text-gray-600">${a.detalhes || ''}</p>
+                    </div>
+                    <div class="text-right text-sm text-gray-500">
+                      <p>${a.dataHora || ''}</p>
+                      <p>${a.usuario || 'Sistema'}</p>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+            html += '</div></div>';
+            document.getElementById('view-content').innerHTML = html;
+          } else {
+            document.getElementById('view-content').innerHTML = `
+              <div class="bg-white rounded-lg shadow p-8 text-center">
+                <div class="text-6xl mb-4">📋</div>
+                <p class="text-gray-600">Nenhuma atividade registrada ainda.</p>
+              </div>
+            `;
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('view-content').innerHTML = `
+            <div class="bg-white rounded-lg shadow p-8 text-center">
+              <p class="text-red-500">Erro ao carregar historico</p>
+            </div>
+          `;
+        })
+        .getHistoricoPorTipo('', 50);
+    }
+
+    function renderCampanhasAtivas() {
+      renderCampanhas();
+    }
+
 // ═══════════════════════════════════════════════════════════════
     //                    VIEW: ASSESSORADOS (VERSÃO COMPLETA)
     // ═══════════════════════════════════════════════════════════════
@@ -2707,7 +2771,7 @@ function openModalChecklist(idCampanha) {
       showToast('Erro ao carregar checklist', 'error');
       console.error(error);
     })
-    .getChecklistCompleto(idCampanha);
+    .getChecklistCompletoComAndamento(idCampanha);
 }
 
 function renderModalChecklist(checklist) {
@@ -2758,9 +2822,13 @@ function renderModalChecklist(checklist) {
                 class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
                 🧾 NF
               </button>
-              <button onclick="switchChecklistTab('repasse')" 
+              <button onclick="switchChecklistTab('repasse')"
                 class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
                 💸 Repasse
+              </button>
+              <button onclick="switchChecklistTab('observacoes')"
+                class="checklist-tab px-4 py-2 border-b-2 border-transparent hover:border-gray-300">
+                📝 Observacoes
               </button>
             </nav>
           </div>
@@ -2808,7 +2876,12 @@ function renderModalChecklist(checklist) {
             <div id="tab-repasse" class="tab-content hidden">
               ${renderTabRepasse(checklist)}
             </div>
-            
+
+            <!-- ABA: OBSERVACOES -->
+            <div id="tab-observacoes" class="tab-content hidden">
+              ${renderTabObservacoes(checklist)}
+            </div>
+
             <!-- Botões -->
             <div class="flex gap-2 justify-end pt-6 border-t border-gray-200 mt-6">
               <button type="button" onclick="closeModal('modal-checklist')" 
@@ -2921,19 +2994,13 @@ function renderTabProduto(c) {
         </div>
       </div>
       
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium mb-2">Quantidade</label>
           <input type="number" name="quantidade" value="${c.quantidade || ''}"
             class="w-full px-4 py-2 border rounded-lg">
         </div>
-        
-        <div>
-          <label class="block text-sm font-medium mb-2">Valor do Produto</label>
-          <input type="number" name="valorProduto" step="0.01" value="${c.valorProduto || ''}"
-            class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        
+
         <div>
           <label class="block text-sm font-medium mb-2">Status do Produto</label>
           <select name="statusProduto" class="w-full px-4 py-2 border rounded-lg">
@@ -3410,6 +3477,22 @@ function renderTabRepasse(c) {
   `;
 }
 
+// Função para renderizar aba de Observações
+function renderTabObservacoes(c) {
+  return `
+    <div class="space-y-6">
+      <h4 class="text-xl font-bold text-litte-dark mb-6 pb-4 border-b-2 border-litte-dark">Observacoes da Campanha</h4>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Observacoes Gerais</label>
+        <textarea name="observacoesCampanha" rows="10"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-litte-dark focus:outline-none"
+          placeholder="Digite aqui observacoes importantes sobre a campanha...">${c.observacoesCampanha || ''}</textarea>
+      </div>
+    </div>
+  `;
+}
+
 // Funções auxiliares do checklist
 
 function switchChecklistTab(tabName) {
@@ -3458,10 +3541,19 @@ function salvarChecklist(event) {
       document.getElementById('btn-save-checklist-text').textContent = '💾 Salvar Alterações';
       
       if (result.success) {
-        showToast('✅ Checklist atualizado com sucesso!', 'success');
-        
-        // Sincronizar campanhas ativas
-        google.script.run.sincronizarCampanhasAtivas();
+        showToast('Checklist atualizado com sucesso!', 'success');
+
+        // Sincronizar campanhas ativas com feedback
+        google.script.run
+          .withSuccessHandler(function(syncResult) {
+            if (syncResult && syncResult.success) {
+              console.log('Campanhas sincronizadas');
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error('Erro na sincronizacao:', error);
+          })
+          .sincronizarCampanhasAtivas();
       } else {
         showToast('❌ Erro: ' + result.message, 'error');
       }
@@ -3502,7 +3594,131 @@ function criarEventoChecklist(idCampanha, etapa, data, nomeInfluenciador, marca)
 }
 
 function openModalFinanceiroCampanha(idCampanha) {
-  showToast('Modal financeiro será implementado na Parte 2C', 'info');
+  showLoading('Carregando dados financeiros...');
+
+  google.script.run
+    .withSuccessHandler(function(financeiro) {
+      hideLoading();
+      if (financeiro && financeiro.success !== false) {
+        renderModalFinanceiro(financeiro);
+      } else {
+        showToast('Dados financeiros nao encontrados', 'error');
+      }
+    })
+    .withFailureHandler(function(error) {
+      hideLoading();
+      showToast('Erro ao carregar dados financeiros', 'error');
+      console.error(error);
+    })
+    .getFinanceiroCampanha(idCampanha);
+}
+
+function renderModalFinanceiro(fin) {
+  const modalHTML = `
+    <div id="modal-financeiro" class="fixed inset-0 modal-backdrop flex items-center justify-center z-40 fade-in">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+
+        <!-- Header -->
+        <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <h3 class="text-xl font-bold">Financeiro da Campanha</h3>
+            <p class="text-sm text-litte-cream">${fin.marca || ''} - ${fin.nomeAssessorado || ''}</p>
+          </div>
+          <button onclick="closeModal('modal-financeiro')" class="text-2xl hover:text-litte-cream">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6">
+          <form id="form-financeiro" onsubmit="salvarFinanceiro(event)">
+            <input type="hidden" name="idCampanha" value="${fin.idCampanha || ''}">
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Valor Total</label>
+                <input type="number" name="valorTotal" step="0.01" value="${fin.valorTotal || ''}"
+                  class="w-full px-4 py-2 border rounded-lg" readonly>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Status Pagamento Cliente</label>
+                <select name="statusPagCliente" class="w-full px-4 py-2 border rounded-lg">
+                  <option value="PENDENTE" ${fin.statusPagCliente === 'PENDENTE' ? 'selected' : ''}>Pendente</option>
+                  <option value="PARCIAL" ${fin.statusPagCliente === 'PARCIAL' ? 'selected' : ''}>Parcial</option>
+                  <option value="PAGO" ${fin.statusPagCliente === 'PAGO' ? 'selected' : ''}>Pago</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Status NF</label>
+                <select name="statusNF" class="w-full px-4 py-2 border rounded-lg">
+                  <option value="A EMITIR" ${fin.statusNF === 'A EMITIR' ? 'selected' : ''}>A Emitir</option>
+                  <option value="EMITIDA" ${fin.statusNF === 'EMITIDA' ? 'selected' : ''}>Emitida</option>
+                  <option value="ENVIADA" ${fin.statusNF === 'ENVIADA' ? 'selected' : ''}>Enviada</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Status Repasse</label>
+                <select name="statusRepasse" class="w-full px-4 py-2 border rounded-lg">
+                  <option value="AGUARDANDO NF" ${fin.statusRepasse === 'AGUARDANDO NF' ? 'selected' : ''}>Aguardando NF</option>
+                  <option value="PENDENTE" ${fin.statusRepasse === 'PENDENTE' ? 'selected' : ''}>Pendente</option>
+                  <option value="PARCIAL" ${fin.statusRepasse === 'PARCIAL' ? 'selected' : ''}>Parcial</option>
+                  <option value="CONCLUIDO" ${fin.statusRepasse === 'CONCLUIDO' ? 'selected' : ''}>Concluido</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Botoes -->
+            <div class="flex gap-2 justify-end pt-6 border-t border-gray-200 mt-6">
+              <button type="button" onclick="closeModal('modal-financeiro')"
+                class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Fechar
+              </button>
+              <button type="submit"
+                class="btn-primary px-6 py-2 rounded-lg">
+                Salvar
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modals-container').innerHTML = modalHTML;
+}
+
+function salvarFinanceiro(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+
+  const dados = {};
+  for (let pair of formData.entries()) {
+    dados[pair[0]] = pair[1];
+  }
+
+  showLoading('Salvando...');
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      if (result.success) {
+        showToast('Financeiro atualizado com sucesso!', 'success');
+        closeModal('modal-financeiro');
+      } else {
+        showToast('Erro: ' + result.message, 'error');
+      }
+    })
+    .withFailureHandler(function(error) {
+      hideLoading();
+      showToast('Erro ao salvar financeiro', 'error');
+    })
+    .atualizarFinanceiroCompleto(dados);
 }
 // ═══════════════════════════════════════════════════════════════════════
 //    PARTE 2C: VIEW FINANCEIRO + RELATÓRIOS
@@ -3937,7 +4153,109 @@ function refreshTemplates() {
 }
 
 function openModalNovoTemplate() {
-  showToast('Funcionalidade em desenvolvimento', 'info');
+  const modalHTML = `
+    <div id="modal-novo-template" class="fixed inset-0 modal-backdrop flex items-center justify-center z-40 fade-in">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+
+        <!-- Header -->
+        <div class="bg-litte-dark text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <h3 class="text-xl font-bold">Novo Template</h3>
+            <p class="text-sm text-litte-cream">Criar novo template de mensagem</p>
+          </div>
+          <button onclick="closeModal('modal-novo-template')" class="text-2xl hover:text-litte-cream">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6">
+          <form id="form-novo-template" onsubmit="salvarNovoTemplate(event)">
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2">Nome do Template</label>
+              <input type="text" name="nome" required
+                class="w-full px-4 py-2 border rounded-lg" placeholder="Ex: Primeiro contato marca">
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2">Categoria</label>
+              <select name="categoria" class="w-full px-4 py-2 border rounded-lg" required>
+                <option value="">Selecione</option>
+                <option value="Prospecção">Prospeccao</option>
+                <option value="Negociação">Negociacao</option>
+                <option value="Fechamento">Fechamento</option>
+                <option value="Follow-up">Follow-up</option>
+                <option value="Cobrança">Cobranca</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2">Assunto</label>
+              <input type="text" name="assunto"
+                class="w-full px-4 py-2 border rounded-lg" placeholder="Ex: Proposta de parceria">
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2">Corpo da Mensagem</label>
+              <textarea name="corpo" rows="8" required
+                class="w-full px-4 py-2 border rounded-lg"
+                placeholder="Digite o template da mensagem. Use {nome}, {marca}, {valor} como variaveis"></textarea>
+              <p class="text-xs text-gray-500 mt-1">Variaveis disponiveis: {nome}, {marca}, {valor}, {data}</p>
+            </div>
+
+            <!-- Botoes -->
+            <div class="flex gap-2 justify-end pt-6 border-t border-gray-200 mt-6">
+              <button type="button" onclick="closeModal('modal-novo-template')"
+                class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancelar
+              </button>
+              <button type="submit"
+                class="btn-primary px-6 py-2 rounded-lg">
+                Salvar Template
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modals-container').innerHTML = modalHTML;
+}
+
+function salvarNovoTemplate(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+
+  const dados = {
+    nome: formData.get('nome'),
+    categoria: formData.get('categoria'),
+    assunto: formData.get('assunto'),
+    corpo: formData.get('corpo')
+  };
+
+  showLoading('Salvando template...');
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      if (result.success) {
+        showToast('Template criado com sucesso!', 'success');
+        closeModal('modal-novo-template');
+        renderTemplates(); // Atualizar lista de templates
+      } else {
+        showToast('Erro: ' + result.message, 'error');
+      }
+    })
+    .withFailureHandler(function(error) {
+      hideLoading();
+      showToast('Erro ao salvar template', 'error');
+      console.error(error);
+    })
+    .criarTemplate(dados);
 }
 
 function copiarTemplate(id) {
