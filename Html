@@ -1541,11 +1541,11 @@
                     <div><label class="block text-sm font-medium mb-1">CNPJ</label>
                       <input type="text" name="cnpj" value="${a.cnpj || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
                     <div><label class="block text-sm font-medium mb-1">Data de Criacao</label>
-                      <input type="date" name="dataCriacaoPJ" value="${a.dataCriacaoPJ || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                      <input type="date" name="dataCriacaoPj" value="${a.dataCriacaoPj || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
                     <div><label class="block text-sm font-medium mb-1">Email PJ</label>
-                      <input type="email" name="emailPJ" value="${a.emailPJ || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                      <input type="email" name="emailPj" value="${a.emailPj || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
                     <div class="col-span-2"><label class="block text-sm font-medium mb-1">Endereco PJ</label>
-                      <input type="text" name="enderecoPJ" value="${a.enderecoPJ || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
+                      <input type="text" name="enderecoPj" value="${a.enderecoPj || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
                     <div><label class="block text-sm font-medium mb-1">Inscricao Municipal</label>
                       <input type="text" name="inscricaoMunicipal" value="${a.inscricaoMunicipal || ''}" class="w-full px-3 py-2 border rounded-lg"></div>
                     <div><label class="block text-sm font-medium mb-1">Inscricao Estadual</label>
@@ -4906,10 +4906,15 @@ function testarIntegracoes() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//                    MODAL: EDITAR ASSESSORADO (COMPLETO)
+//                    MODAL: EDITAR ASSESSORADO (REMOVIDO - DUPLICADO)
+// ═══════════════════════════════════════════════════════════════════════
+// NOTA: O modal de edição com 7 abas está definido na função
+// renderModalEditarAssessorado() nas linhas ~1437
+// A função editarAssessorado(id) que chama o modal está na linha ~1414
 // ═══════════════════════════════════════════════════════════════════════
 
-function editarAssessorado(assessorado) {
+/* CODIGO ANTIGO REMOVIDO - INICIO (era função editarAssessorado antiga)
+function editarAssessorado_OLD(assessorado) {
   const modalHTML = `
     <div id="modal-editar-assessorado" class="fixed inset-0 modal-backdrop flex items-center justify-center z-40 fade-in">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4">
@@ -5135,6 +5140,7 @@ function salvarEdicaoAssessorado(event) {
     })
     .atualizarAssessorado(dados);
 }
+CODIGO ANTIGO REMOVIDO - FIM */
 
 // ═══════════════════════════════════════════════════════════════════════
 //                    1. VER DETALHES ASSESSORADO

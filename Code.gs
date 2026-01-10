@@ -1190,41 +1190,65 @@ Logger.log('✅ 2_Utils.gs carregado - Funções utilitárias disponíveis');
 
 /**
  * Retorna todos os assessorados cadastrados
+ * Estrutura: 34 colunas conforme modelo oficial
  * @returns {Array} Array de objetos com dados dos assessorados
  */
 function getAllAssessorados() {
   try {
     const sheet = setupAssessoradosSheet();
     if (sheet.getLastRow() <= 1) return [];
-   
-    const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 24).getValues();
-   
+
+    const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 34).getValues();
+
     return data.filter(function(row) { return row[0]; }).map(function(row) {
       return {
+        // ABA 1: PERFIL (cols 1-6)
         id: String(row[0] || ''),
         nome: String(row[1] || ''),
         usuario: String(row[2] || ''),
         email: String(row[3] || ''),
         telefone: String(row[4] || ''),
         idade: String(row[5] || ''),
-        sapato: String(row[6] || ''),
-        camiseta: String(row[7] || ''),
-        calca: String(row[8] || ''),
-        enderecoNome: String(row[9] || ''),
-        rua: String(row[10] || ''),
-        numero: String(row[11] || ''),
-        complemento: String(row[12] || ''),
-        bairro: String(row[13] || ''),
-        cidade: String(row[14] || ''),
-        estado: String(row[15] || ''),
-        cep: String(row[16] || ''),
-        status: String(row[17] || 'Ativo'),
-        dataCadastro: row[18] ? formatDateToISO(row[18]) : '',
-        observacoes: String(row[19] || ''),
-        urlPastaDrive: String(row[20] || ''),
-        linkPlanilhaEspelho: String(row[21] || ''),
-        dataCriacao: row[22] ? formatDateToISO(row[22]) : '',
-        ultimaAtualizacao: row[23] ? formatDateToISO(row[23]) : ''
+
+        // ABA 2: LOGISTICA (cols 7-9)
+        camiseta: String(row[6] || ''),
+        calca: String(row[7] || ''),
+        sapato: String(row[8] || ''),
+
+        // ABA 3: DOCUMENTACAO PF (cols 10-12)
+        cpf: String(row[9] || ''),
+        rg: String(row[10] || ''),
+        cnpjIndividual: String(row[11] || ''),
+
+        // ABA 4: TESTEMUNHA (cols 13-17)
+        testemunhaNome: String(row[12] || ''),
+        testemunhaEmail: String(row[13] || ''),
+        testemunhaTelefone: String(row[14] || ''),
+        testemunhaCpf: String(row[15] || ''),
+        testemunhaRg: String(row[16] || ''),
+
+        // ABA 5: DADOS EMPRESARIAIS PJ (cols 18-24)
+        razaoSocial: String(row[17] || ''),
+        cnpj: String(row[18] || ''),
+        dataCriacaoPj: row[19] ? formatDateToISO(row[19]) : '',
+        emailPj: String(row[20] || ''),
+        enderecoPj: String(row[21] || ''),
+        inscricaoMunicipal: String(row[22] || ''),
+        inscricaoEstadual: String(row[23] || ''),
+
+        // ABA 6: DADOS BANCARIOS (cols 25-29)
+        tipoConta: String(row[24] || ''),
+        banco: String(row[25] || ''),
+        agencia: String(row[26] || ''),
+        conta: String(row[27] || ''),
+        pix: String(row[28] || ''),
+
+        // ABA 7: SISTEMA (cols 30-34)
+        status: String(row[29] || 'Ativo'),
+        observacoes: String(row[30] || ''),
+        urlPastaDrive: String(row[31] || ''),
+        dataCriacao: row[32] ? formatDateToISO(row[32]) : '',
+        ultimaAtualizacao: row[33] ? formatDateToISO(row[33]) : ''
       };
     });
   } catch (e) {
@@ -1299,32 +1323,55 @@ function criarAssessorado(dados) {
       return { success: false, message: 'Nome e Usuário são obrigatórios' };
     }
    
-    // Adicionar linha com TODOS os 24 campos
+    // Adicionar linha com TODOS os 34 campos (modelo oficial)
     sheet.appendRow([
-      id,                             // 1. ID
-      dados.nome,                     // 2. Nome
-      dados.usuario,                  // 3. Usuario
-      dados.email || '',              // 4. Email
-      dados.telefone || '',           // 5. Telefone
-      dados.idade || '',              // 6. Idade
-      dados.sapato || '',             // 7. Sapato
-      dados.camiseta || '',           // 8. Camiseta
-      dados.calca || '',              // 9. Calça
-      dados.enderecoNome || '',       // 10. Endereço Nome
-      dados.rua || '',                // 11. Rua
-      dados.numero || '',             // 12. Número
-      dados.complemento || '',        // 13. Complemento
-      dados.bairro || '',             // 14. Bairro
-      dados.cidade || '',             // 15. Cidade
-      dados.estado || '',             // 16. Estado
-      dados.cep || '',                // 17. CEP
-      dados.status || 'Ativo',        // 18. Status
-      hoje,                           // 19. Data Cadastro
-      dados.observacoes || '',        // 20. Observações
-      '',                             // 21. URL Pasta Drive (será preenchido)
-      '',                             // 22. Link Planilha Espelho (será preenchido)
-      hoje,                           // 23. Data Criacao
-      hoje                            // 24. Ultima Atualizacao
+      // ABA 1: PERFIL (cols 1-6)
+      id,                                 // 1. ID
+      dados.nome,                         // 2. Nome
+      dados.usuario,                      // 3. Usuario
+      dados.email || '',                  // 4. Email
+      dados.telefone || '',               // 5. Telefone
+      dados.idade || '',                  // 6. Idade
+
+      // ABA 2: LOGISTICA (cols 7-9)
+      dados.camiseta || '',               // 7. Camiseta
+      dados.calca || '',                  // 8. Calça
+      dados.sapato || '',                 // 9. Sapato
+
+      // ABA 3: DOCUMENTACAO PF (cols 10-12)
+      dados.cpf || '',                    // 10. CPF
+      dados.rg || '',                     // 11. RG
+      dados.cnpjIndividual || '',         // 12. CNPJ Individual
+
+      // ABA 4: TESTEMUNHA (cols 13-17)
+      dados.testemunhaNome || '',         // 13. Testemunha Nome
+      dados.testemunhaEmail || '',        // 14. Testemunha Email
+      dados.testemunhaTelefone || '',     // 15. Testemunha Telefone
+      dados.testemunhaCpf || '',          // 16. Testemunha CPF
+      dados.testemunhaRg || '',           // 17. Testemunha RG
+
+      // ABA 5: DADOS EMPRESARIAIS PJ (cols 18-24)
+      dados.razaoSocial || '',            // 18. Razao Social
+      dados.cnpj || '',                   // 19. CNPJ
+      dados.dataCriacaoPj || '',          // 20. Data Criacao PJ
+      dados.emailPj || '',                // 21. Email PJ
+      dados.enderecoPj || '',             // 22. Endereco PJ
+      dados.inscricaoMunicipal || '',     // 23. Inscricao Municipal
+      dados.inscricaoEstadual || '',      // 24. Inscricao Estadual
+
+      // ABA 6: DADOS BANCARIOS (cols 25-29)
+      dados.tipoConta || '',              // 25. Tipo Conta
+      dados.banco || '',                  // 26. Banco
+      dados.agencia || '',                // 27. Agencia
+      dados.conta || '',                  // 28. Conta
+      dados.pix || '',                    // 29. PIX
+
+      // ABA 7: SISTEMA (cols 30-34)
+      dados.status || 'Ativo',            // 30. Status
+      dados.observacoes || '',            // 31. Observações
+      '',                                 // 32. URL Pasta Drive (será preenchido)
+      hoje,                               // 33. Data Criacao
+      hoje                                // 34. Ultima Atualizacao
     ]);
    
     SpreadsheetApp.flush();
@@ -1344,36 +1391,30 @@ function criarAssessorado(dados) {
     } else {
       Logger.log('✅ Drive criado: ' + resultDrive.urlPastaMae);
       
-      // Atualizar URL na planilha
+      // Atualizar URL na planilha (coluna 32 no novo modelo)
       const rowNum = findRowById(sheet, id);
       if (rowNum) {
-        sheet.getRange(rowNum, 21).setValue(resultDrive.urlPastaMae);
+        sheet.getRange(rowNum, 32).setValue(resultDrive.urlPastaMae);
         SpreadsheetApp.flush();
-        Logger.log('✅ URL do Drive salva (coluna 21)');
+        Logger.log('✅ URL do Drive salva (coluna 32)');
       }
     }
-   
+
     // ═══════════════════════════════════════════════════════════════
-    // AUTOMAÇÃO 2: CRIAR PLANILHA ESPELHO
+    // AUTOMAÇÃO 2: CRIAR PLANILHA ESPELHO (armazenada no Drive)
     // ═══════════════════════════════════════════════════════════════
-    
+
     Logger.log('');
     Logger.log('📊 [2/2] Criando planilha espelho...');
-    
+
     const resultPlanilha = criarPlanilhaEspelho(id, dados.nome);
-   
+
     if (!resultPlanilha.success) {
       Logger.log('⚠️ Planilha não foi criada: ' + resultPlanilha.message);
     } else {
       Logger.log('✅ Planilha criada: ' + resultPlanilha.url);
-      
-      // Atualizar URL na planilha
-      const rowNum = findRowById(sheet, id);
-      if (rowNum) {
-        sheet.getRange(rowNum, 22).setValue(resultPlanilha.url);
-        SpreadsheetApp.flush();
-        Logger.log('✅ URL da planilha salva (coluna 22)');
-      }
+      // Nota: URL da planilha espelho não é salva na sheet (não há coluna no modelo v3.5)
+      // A planilha fica armazenada dentro da pasta do assessorado no Drive
     }
    
     // ═══════════════════════════════════════════════════════════════
@@ -1432,65 +1473,101 @@ function criarAssessorado(dados) {
 
 /**
  * Atualiza os dados de um assessorado existente
+ * Estrutura: 34 colunas conforme modelo oficial
  * @param {Object} dados - Dados a serem atualizados (deve incluir o ID)
  * @returns {Object} {success, message}
  */
 function atualizarAssessorado(dados) {
   try {
     logInicio('atualizarAssessorado - ID: ' + dados.id);
-    
+
     const sheet = setupAssessoradosSheet();
     const rowNum = findRowById(sheet, dados.id);
-   
+
     if (!rowNum) {
       Logger.log('❌ Assessorado não encontrado: ' + dados.id);
       return { success: false, message: 'Assessorado não encontrado' };
     }
-   
+
     Logger.log('✅ Assessorado encontrado na linha: ' + rowNum);
-   
+
     const hoje = new Date();
-   
-    // Buscar valores antigos para histórico
-    const valoresAntigos = sheet.getRange(rowNum, 1, 1, 24).getValues()[0];
+
+    // Buscar valores antigos para histórico (34 colunas)
+    const valoresAntigos = sheet.getRange(rowNum, 1, 1, 34).getValues()[0];
     const nomeAntigo = valoresAntigos[1];
-   
-    // Atualizar campos (apenas os que foram enviados)
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 1: PERFIL (cols 1-6)
+    // ═══════════════════════════════════════════════════════════════
     if (dados.nome !== undefined) {
       sheet.getRange(rowNum, 2).setValue(dados.nome);
       Logger.log('✅ Nome atualizado: ' + dados.nome);
     }
-    
     if (dados.usuario !== undefined) {
       sheet.getRange(rowNum, 3).setValue(dados.usuario);
       Logger.log('✅ Usuario atualizado: ' + dados.usuario);
     }
-    
     if (dados.email !== undefined) sheet.getRange(rowNum, 4).setValue(dados.email);
     if (dados.telefone !== undefined) sheet.getRange(rowNum, 5).setValue(dados.telefone);
     if (dados.idade !== undefined) sheet.getRange(rowNum, 6).setValue(dados.idade);
-    if (dados.sapato !== undefined) sheet.getRange(rowNum, 7).setValue(dados.sapato);
-    if (dados.camiseta !== undefined) sheet.getRange(rowNum, 8).setValue(dados.camiseta);
-    if (dados.calca !== undefined) sheet.getRange(rowNum, 9).setValue(dados.calca);
-    if (dados.enderecoNome !== undefined) sheet.getRange(rowNum, 10).setValue(dados.enderecoNome);
-    if (dados.rua !== undefined) sheet.getRange(rowNum, 11).setValue(dados.rua);
-    if (dados.numero !== undefined) sheet.getRange(rowNum, 12).setValue(dados.numero);
-    if (dados.complemento !== undefined) sheet.getRange(rowNum, 13).setValue(dados.complemento);
-    if (dados.bairro !== undefined) sheet.getRange(rowNum, 14).setValue(dados.bairro);
-    if (dados.cidade !== undefined) sheet.getRange(rowNum, 15).setValue(dados.cidade);
-    if (dados.estado !== undefined) sheet.getRange(rowNum, 16).setValue(dados.estado);
-    if (dados.cep !== undefined) sheet.getRange(rowNum, 17).setValue(dados.cep);
-    if (dados.status !== undefined) sheet.getRange(rowNum, 18).setValue(dados.status);
-    if (dados.observacoes !== undefined) sheet.getRange(rowNum, 20).setValue(dados.observacoes);
-    if (dados.urlPastaDrive !== undefined) sheet.getRange(rowNum, 21).setValue(dados.urlPastaDrive);
-    if (dados.linkPlanilhaEspelho !== undefined) sheet.getRange(rowNum, 22).setValue(dados.linkPlanilhaEspelho);
-   
-    // Atualizar data de última atualização (sempre)
-    sheet.getRange(rowNum, 24).setValue(hoje);
-   
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 2: LOGISTICA (cols 7-9)
+    // ═══════════════════════════════════════════════════════════════
+    if (dados.camiseta !== undefined) sheet.getRange(rowNum, 7).setValue(dados.camiseta);
+    if (dados.calca !== undefined) sheet.getRange(rowNum, 8).setValue(dados.calca);
+    if (dados.sapato !== undefined) sheet.getRange(rowNum, 9).setValue(dados.sapato);
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 3: DOCUMENTACAO PF (cols 10-12)
+    // ═══════════════════════════════════════════════════════════════
+    if (dados.cpf !== undefined) sheet.getRange(rowNum, 10).setValue(dados.cpf);
+    if (dados.rg !== undefined) sheet.getRange(rowNum, 11).setValue(dados.rg);
+    if (dados.cnpjIndividual !== undefined) sheet.getRange(rowNum, 12).setValue(dados.cnpjIndividual);
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 4: TESTEMUNHA (cols 13-17)
+    // ═══════════════════════════════════════════════════════════════
+    if (dados.testemunhaNome !== undefined) sheet.getRange(rowNum, 13).setValue(dados.testemunhaNome);
+    if (dados.testemunhaEmail !== undefined) sheet.getRange(rowNum, 14).setValue(dados.testemunhaEmail);
+    if (dados.testemunhaTelefone !== undefined) sheet.getRange(rowNum, 15).setValue(dados.testemunhaTelefone);
+    if (dados.testemunhaCpf !== undefined) sheet.getRange(rowNum, 16).setValue(dados.testemunhaCpf);
+    if (dados.testemunhaRg !== undefined) sheet.getRange(rowNum, 17).setValue(dados.testemunhaRg);
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 5: DADOS EMPRESARIAIS PJ (cols 18-24)
+    // ═══════════════════════════════════════════════════════════════
+    if (dados.razaoSocial !== undefined) sheet.getRange(rowNum, 18).setValue(dados.razaoSocial);
+    if (dados.cnpj !== undefined) sheet.getRange(rowNum, 19).setValue(dados.cnpj);
+    if (dados.dataCriacaoPj !== undefined) sheet.getRange(rowNum, 20).setValue(dados.dataCriacaoPj);
+    if (dados.emailPj !== undefined) sheet.getRange(rowNum, 21).setValue(dados.emailPj);
+    if (dados.enderecoPj !== undefined) sheet.getRange(rowNum, 22).setValue(dados.enderecoPj);
+    if (dados.inscricaoMunicipal !== undefined) sheet.getRange(rowNum, 23).setValue(dados.inscricaoMunicipal);
+    if (dados.inscricaoEstadual !== undefined) sheet.getRange(rowNum, 24).setValue(dados.inscricaoEstadual);
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 6: DADOS BANCARIOS (cols 25-29)
+    // ═══════════════════════════════════════════════════════════════
+    if (dados.tipoConta !== undefined) sheet.getRange(rowNum, 25).setValue(dados.tipoConta);
+    if (dados.banco !== undefined) sheet.getRange(rowNum, 26).setValue(dados.banco);
+    if (dados.agencia !== undefined) sheet.getRange(rowNum, 27).setValue(dados.agencia);
+    if (dados.conta !== undefined) sheet.getRange(rowNum, 28).setValue(dados.conta);
+    if (dados.pix !== undefined) sheet.getRange(rowNum, 29).setValue(dados.pix);
+
+    // ═══════════════════════════════════════════════════════════════
+    // ABA 7: SISTEMA (cols 30-34)
+    // ═══════════════════════════════════════════════════════════════
+    if (dados.status !== undefined) sheet.getRange(rowNum, 30).setValue(dados.status);
+    if (dados.observacoes !== undefined) sheet.getRange(rowNum, 31).setValue(dados.observacoes);
+    if (dados.urlPastaDrive !== undefined) sheet.getRange(rowNum, 32).setValue(dados.urlPastaDrive);
+
+    // Atualizar data de última atualização (sempre - coluna 34)
+    sheet.getRange(rowNum, 34).setValue(hoje);
+
     SpreadsheetApp.flush();
     Logger.log('✅ Dados atualizados na planilha');
-   
+
     // Registrar no histórico
     registrarHistorico(
       'Assessorado',
@@ -1501,9 +1578,9 @@ function atualizarAssessorado(dados) {
       dados.nome || nomeAntigo,
       'Dados atualizados'
     );
-   
+
     logFim('atualizarAssessorado', true);
-   
+
     return { success: true, message: 'Assessorado atualizado com sucesso!' };
     
   } catch (e) {
